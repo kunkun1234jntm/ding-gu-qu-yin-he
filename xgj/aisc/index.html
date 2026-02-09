@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI配音助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #21d399, #21d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #21d399;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #21d399;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .generate-btn:hover {
+            background: #1aa87d;
+        }
+        
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .audio-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f6ff;
+            border-radius: 12px;
+            border: 2px dashed #21d399;
+        }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        
+        .play-btn {
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .play-btn:hover {
+            background: #1aa87d;
+        }
+        
+        .download-btn {
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .download-btn:hover {
+            background: #1aa87d;
+        }
+        
+        .progress-container {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #21d399;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(22, 93, 255, 0.1);
+            border-top: 4px solid #21d399;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .error-msg {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: currentColor;
+            mask-size: cover;
+            -webkit-mask-size: cover;
+        }
+        
+        .icon-mic {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-download {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-play {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-pause {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19h4V5H6v14zm8-14v14h4V5h-4z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19h4V5H6v14zm8-14v14h4V5h-4z'/%3E%3C/svg%3E");
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .char-count.warning {
+            color: #21d399;
+        }
+        
+        .char-count.error {
+            color: #c33;
+        }
+/* 添加在现有的 CSS 中 */
+.help-section {
+    margin-top: 20px;
+}
+
+.help-title {
+    color: #21d399;
+    font-size: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.help-content {
+    margin-bottom: 20px;
+}
+
+.help-step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 0;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #21d399;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 12px;
+}
+
+.step-text {
+    color: #555;
+    font-size: 14px;
+}
+
+.help-notice {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #21d399;
+}
+
+.help-notice p {
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.help-notice p:last-child {
+    margin-bottom: 0;
+}
+/* 添加在现有的 CSS 中 */
+.hero-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.main-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #21d399;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* 替换原来的轮播图CSS */
+.carousel {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+}
+
+.carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.dot.active {
+    background: #21d399;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 错误提示 -->
+        <div class="error-msg" id="errorMsg"></div>
+
+
+<!-- 替换原来的轮播图HTML -->
+<div class="hero-section">
+    <h1 class="main-title">AI配音助手</h1>
+    <div class="carousel">
+        <div class="carousel-slide active">
+            <img src="1.jpg" alt="轮播图1" class="carousel-image">
+        </div>
+        <div class="carousel-slide">
+            <img src="1.jpg" alt="轮播图2" class="carousel-image">
+        </div>
+        <div class="carousel-slide">
+            <img src="1.jpg" alt="轮播图3" class="carousel-image">
+        </div>
+    </div>
+    <div class="carousel-dots">
+        <span class="dot active" data-slide="0"></span>
+        <span class="dot" data-slide="1"></span>
+        <span class="dot" data-slide="2"></span>
+    </div>
+</div>
+        
+        <!-- 提示信息 -->
+        <div class="toast" id="toast"></div>
+        
+        
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label" for="speakerSelect">选择配音角色</label>
+                <select class="form-select" id="speakerSelect">
+                    <option value="">正在加载角色列表...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="textInput">输入文本内容</label>
+                <textarea class="form-textarea" id="textInput" placeholder="请输入需要转换为语音的文本内容..." maxlength="500"></textarea>
+                <div class="char-count" id="charCount">0/500</div>
+            </div>
+            
+            <button class="generate-btn" id="generateBtn" disabled>
+                <span class="icon icon-mic"></span>
+                <span>生成配音</span>
+            </button>
+            
+            <div class="audio-preview hidden" id="audioPreview">
+                <div class="audio-controls">
+                    <button class="play-btn" id="playBtn">
+                        <span class="icon icon-play"></span>
+                        <span>播放</span>
+                    </button>
+                    <button class="download-btn" id="downloadBtn">
+                        <span class="icon icon-download"></span>
+                        <span>下载</span>
+                    </button>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加载指示器 -->
+        <div class="card hidden" id="loading">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <div>正在生成配音，请稍候...</div>
+            </div>
+        </div>
+<div class="card help-section">
+    <h3 class="help-title">使用帮助</h3>
+    <div class="help-content">
+        <div class="help-step">
+            <span class="step-number">1</span>
+            <span class="step-text">选角色-选择您喜欢的配音角色</span>
+        </div>
+        <div class="help-step">
+            <span class="step-number">2</span>
+            <span class="step-text">输文本-输入需要转换的文本内容</span>
+        </div>
+        <div class="help-step">
+            <span class="step-number">3</span>
+            <span class="step-text">生成配音-点击生成获取语音文件</span>
+        </div>
+    </div>
+    <div class="help-notice">
+        <p><strong>下载说明:</strong>如果点击"下载"后只显示了音频预览，不用担心，系统自带下载按钮，可以手动下载！</p>
+        <p><strong>注意事项:</strong>如果用不了可能是软件在维护或者失效了请及时反馈，软件资源来源于网络收集，程序仅限用于交流学习，请勿用于任何非法用途!</p>
+    </div>
+</div> 
+    </div>
+
+    <script>
+        // DOM元素
+        const speakerSelect = document.getElementById('speakerSelect');
+        const textInput = document.getElementById('textInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const audioPreview = document.getElementById('audioPreview');
+        const playBtn = document.getElementById('playBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const loading = document.getElementById('loading');
+        const toast = document.getElementById('toast');
+        const errorMsg = document.getElementById('errorMsg');
+        const charCount = document.getElementById('charCount');
+        const progress = document.getElementById('progress');
+        const currentTime = document.getElementById('currentTime');
+        const duration = document.getElementById('duration');
+        
+        // API配置
+        const SPEAKER_API = 'https://api.milorapart.top/apis/AIvoice/?type=list';
+        const VOICE_API = 'https://api.milorapart.top/apis/AIvoice/';
+        
+        // 当前生成的音频URL和音频对象
+        let currentAudioUrl = '';
+        let audio = new Audio();
+        let isPlaying = false;
+        
+        // 初始化应用
+        function initApp() {
+            loadSpeakers();
+            setupEventListeners();
+            updateCharCount();
+            initCarousel(); // 初始化轮播图
+        }
+// 轮播图功能保持不变
+function initCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.dot');
+    let currentSlide = 0;
+    
+    function showSlide(n) {
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        currentSlide = (n + slides.length) % slides.length;
+        
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+    }
+    
+    // 自动轮播
+    setInterval(() => {
+        showSlide(currentSlide + 1);
+    }, 3000);
+    
+    // 点击圆点切换
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            showSlide(index);
+        });
+    });
+}
+     
+        
+        // 加载角色列表
+        async function loadSpeakers() {
+            try {
+                const response = await fetch(SPEAKER_API);
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    // 清空现有选项
+                    speakerSelect.innerHTML = '';
+                    
+                    // 添加默认选项
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '请选择配音角色';
+                    speakerSelect.appendChild(defaultOption);
+                    
+                    // 添加角色选项
+                    data.speakers.forEach(speaker => {
+                        const option = document.createElement('option');
+                        option.value = speaker;
+                        option.textContent = speaker;
+                        speakerSelect.appendChild(option);
+                    });
+                    
+                    // 启用生成按钮
+                    generateBtn.disabled = false;
+                } else {
+                    throw new Error(data.msg || '获取角色列表失败');
+                }
+            } catch (error) {
+                console.error('加载角色列表错误:', error);
+                showError('加载角色列表失败，请刷新页面重试');
+                
+                // 添加默认角色作为备选
+                speakerSelect.innerHTML = '';
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '加载失败，请刷新页面';
+                speakerSelect.appendChild(defaultOption);
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 生成按钮点击事件
+            generateBtn.addEventListener('click', generateVoice);
+            
+            // 文本输入变化事件
+            textInput.addEventListener('input', updateCharCount);
+            
+            // 播放按钮点击事件
+            playBtn.addEventListener('click', togglePlay);
+            
+            // 下载按钮点击事件
+            downloadBtn.addEventListener('click', downloadAudio);
+            
+            // 音频事件监听
+            audio.addEventListener('loadedmetadata', updateDuration);
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', onAudioEnded);
+            
+            // 进度条点击事件
+            progress.parentElement.addEventListener('click', seekAudio);
+            
+            // 回车键触发生成
+            textInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    generateVoice();
+                }
+            });
+        }
+        
+        // 更新字符计数
+        function updateCharCount() {
+            const count = textInput.value.length;
+            charCount.textContent = `${count}/500`;
+            
+            if (count > 450) {
+                charCount.classList.add('warning');
+                charCount.classList.remove('error');
+            } else if (count > 490) {
+                charCount.classList.remove('warning');
+                charCount.classList.add('error');
+            } else {
+                charCount.classList.remove('warning', 'error');
+            }
+        }
+        
+        // 生成语音
+        async function generateVoice() {
+            const speaker = speakerSelect.value;
+            const text = textInput.value.trim();
+            
+            if (!speaker) {
+                showError('请选择配音角色');
+                return;
+            }
+            
+            if (!text) {
+                showError('请输入文本内容');
+                return;
+            }
+            
+            if (text.length > 500) {
+                showError('文本内容不能超过500个字符');
+                return;
+            }
+            
+            // 显示加载
+            showLoading();
+            hideError();
+            
+            // 隐藏音频预览
+            audioPreview.classList.add('hidden');
+            
+            try {
+                // 构建API URL
+                const apiUrl = `${VOICE_API}?text=${encodeURIComponent(text)}&speaker=${encodeURIComponent(speaker)}`;
+                
+                // 调用API接口
+                const response = await fetch(apiUrl);
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.code === 200 && data.url) {
+                    // 设置音频URL
+                    currentAudioUrl = data.url;
+                    audio.src = currentAudioUrl;
+                    
+                    // 显示音频预览
+                    audioPreview.classList.remove('hidden');
+                    
+                    // 显示成功提示
+                    showToast('配音生成成功！');
+                    
+                    // 自动播放音频
+                    setTimeout(() => {
+                        audio.play();
+                        isPlaying = true;
+                        updatePlayButton();
+                    }, 500);
+                } else {
+                    throw new Error(data.msg || '生成配音失败');
+                }
+            } catch (error) {
+                console.error('生成配音错误:', error);
+                showError('生成配音失败，请稍后重试');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 切换播放/暂停
+        function togglePlay() {
+            if (!currentAudioUrl) return;
+            
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                audio.play();
+            }
+            isPlaying = !isPlaying;
+            updatePlayButton();
+        }
+        
+        // 更新播放按钮状态
+        function updatePlayButton() {
+            const icon = playBtn.querySelector('.icon');
+            const text = playBtn.querySelector('span:last-child');
+            
+            if (isPlaying) {
+                icon.className = 'icon icon-pause';
+                text.textContent = '暂停';
+            } else {
+                icon.className = 'icon icon-play';
+                text.textContent = '播放';
+            }
+        }
+        
+        // 音频播放结束
+        function onAudioEnded() {
+            isPlaying = false;
+            updatePlayButton();
+            progress.style.width = '0%';
+            currentTime.textContent = '0:00';
+        }
+        
+        // 更新音频时长
+        function updateDuration() {
+            const minutes = Math.floor(audio.duration / 60);
+            const seconds = Math.floor(audio.duration % 60);
+            duration.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 更新进度条
+        function updateProgress() {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progress.style.width = `${percent}%`;
+            
+            const minutes = Math.floor(audio.currentTime / 60);
+            const seconds = Math.floor(audio.currentTime % 60);
+            currentTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 点击进度条跳转
+        function seekAudio(e) {
+            if (!audio.duration) return;
+            
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+        
+        // 下载音频
+        function downloadAudio() {
+            if (!currentAudioUrl) {
+                showError('没有可下载的音频');
+                return;
+            }
+            
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.href = currentAudioUrl;
+            a.download = `配音_${new Date().getTime()}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('音频下载已开始');
+        }
+        
+        // UI辅助函数
+        function showLoading() {
+            loading.classList.remove('hidden');
+            generateBtn.disabled = true;
+        }
+        
+        function hideLoading() {
+            loading.classList.add('hidden');
+            generateBtn.disabled = false;
+        }
+        
+        function showToast(message) {
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2000);
+        }
+        
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+        
+        function hideError() {
+            errorMsg.style.display = 'none';
+        }
+        
+        // 页面加载完成后初始化应用
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

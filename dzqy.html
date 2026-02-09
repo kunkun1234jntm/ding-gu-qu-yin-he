@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子乔鱼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        
+        .title {
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .counter {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 25px;
+            border-radius: 50px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .wooden-fish {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .wooden-fish img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+        
+        .wooden-fish:active {
+            transform: scale(0.95);
+        }
+        
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .settings-btn:hover {
+            transform: rotate(45deg);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .settings-btn i {
+            font-size: 24px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .close-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .setting-item {
+            margin: 15px 0;
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .setting-item input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .clear-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .clear-btn:active {
+            transform: translateY(0);
+        }
+        
+        .about-content {
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 2s ease-in-out;
+        }
+        
+        .score-popup {
+            position: absolute;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            animation: scoreFloat 2s ease-out;
+        }
+        
+        @keyframes scoreFloat {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .counter {
+                font-size: 2rem;
+            }
+            
+            .wooden-fish {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .score-popup {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="settings-btn" id="settingsBtn">
+        <i>⚙️</i>
+    </div>
+    
+    <h1 class="title">电子乔鱼</h1>
+    
+    <div class="counter">
+        子儿: <span id="count">0</span>
+    </div>
+    
+    <div class="wooden-fish" id="woodenFish">
+        <img src="./dzqy/wzxq.png" alt="旺仔小乔">
+    </div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">×</span>
+            <h2>功能</h2>
+            
+            <div class="tab-buttons">
+                <div class="tab-btn active" data-tab="settings">设置</div>
+                <div class="tab-btn" data-tab="about">关于</div>
+            </div>
+            
+            <div class="tab-content active" id="settings-tab">
+                <div class="setting-item">
+                    <label for="incrementValue">每次点击增加子儿数量</label>
+                    <input type="number" id="incrementValue" min="1" value="1">
+                </div>
+                
+                <button class="clear-btn" id="clearBtn">全部刷给WZXQ</button>
+            </div>
+            
+            <div class="tab-content" id="about-tab">
+                <div class="about-content">
+                    <p>作者：马里奥顶蘑菇Mario</p>
+                    <p><a href="https://space.bilibili.com/1644972548">点击关注B站账号</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const woodenFish = document.getElementById('woodenFish');
+            const countElement = document.getElementById('count');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const modal = document.getElementById('modal');
+            const closeModal = document.getElementById('closeModal');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const incrementInput = document.getElementById('incrementValue');
+            const particlesContainer = document.getElementById('particles');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            let count = 0;
+            let incrementValue = 1;
+            
+            // 预加载音频
+            const sound = new Audio();
+            sound.src = "./dzqy/zi.mp3";
+            sound.preload = "auto";
+            
+            // 从本地存储加载数据
+            if (localStorage.getItem('ziErCount')) {
+                count = parseInt(localStorage.getItem('ziErCount'));
+                countElement.textContent = count;
+            }
+            
+            if (localStorage.getItem('incrementValue')) {
+                incrementValue = parseInt(localStorage.getItem('incrementValue'));
+                incrementInput.value = incrementValue;
+            }
+            
+            // 点击旺仔小乔增加子儿
+            woodenFish.addEventListener('click', function(e) {
+                count += incrementValue;
+                countElement.textContent = count;
+                localStorage.setItem('ziErCount', count);
+                
+                // 播放音效
+                playSound();
+                
+                // 显示增加数值的动画
+                showScorePopup(e, incrementValue);
+                
+                // 创建粒子动画
+                createParticles();
+                
+                // 添加点击动画
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+            });
+            
+            // 打开设置窗口
+            settingsBtn.addEventListener('click', function() {
+                modal.style.display = 'flex';
+            });
+            
+            // 关闭设置窗口
+            closeModal.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // 点击窗口外部关闭设置
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // 选项卡切换
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    
+                    // 切换活动选项卡
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示对应内容
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(`${tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // 保存增量值
+            incrementInput.addEventListener('change', function() {
+                incrementValue = parseInt(this.value) || 1;
+                localStorage.setItem('incrementValue', incrementValue);
+            });
+            
+            // 清除子儿
+            clearBtn.addEventListener('click', function() {
+                if (confirm("确定要全部刷给WZXQ吗？")) {
+                    count = 0;
+                    countElement.textContent = count;
+                    localStorage.setItem('ziErCount', count);
+                    
+                    // 添加清除动画效果
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
+                    
+                    // 显示提示信息
+                    //alert("已全部刷给WZXQ！");
+                }
+            });
+            
+            // 创建粒子动画
+            function createParticles() {
+                for (let i = 0; i < 10; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // 随机大小和位置
+                    const size = Math.random() * 10 + 5;
+                    const left = Math.random() * 100;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${left}%`;
+                    particle.style.bottom = '0';
+                    
+                    // 随机延迟和动画时间
+                    const delay = Math.random() * 0.5;
+                    const duration = Math.random() * 1 + 1.5;
+                    
+                    particle.style.animationDelay = `${delay}s`;
+                    particle.style.animationDuration = `${duration}s`;
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    // 动画结束后移除元素
+                    setTimeout(() => {
+                        particle.remove();
+                    }, (delay + duration) * 1000);
+                }
+            }
+            
+            // 播放音效
+            function playSound() {
+                sound.currentTime = 0;
+                sound.play().catch(e => {
+                    console.log("音频播放失败:", e);
+                });
+            }
+            
+            // 显示增加数值的动画
+            function showScorePopup(event, value) {
+                const popup = document.createElement('div');
+                popup.className = 'score-popup';
+                popup.textContent = `子儿+${value}`;
+                
+                // 设置位置为点击位置
+                const rect = woodenFish.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                popup.style.left = `${x}px`;
+                popup.style.top = `${y}px`;
+                
+                woodenFish.appendChild(popup);
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    popup.remove();
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

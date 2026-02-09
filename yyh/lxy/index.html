@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刘晓艳语音盒</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f2f4f1;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #main {
+            max-width: 383px;
+            width: 100%;
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            position: relative;
+        }
+        .top {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .top .name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #21d399;
+        }
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 130px;
+            overflow: hidden;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .carousel img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .carousel img.active {
+            opacity: 1;
+        }
+        .marquee {
+            background-color: #21d399;
+            color: white;
+            padding: 10px;
+            border-radius: 15px;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-bottom: 20px;
+        }
+        .marquee span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 10s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .ctrl {
+            margin-bottom: 20px;
+            display: none; /* 初始隐藏 */
+        }
+        .gongneng {
+            font-size: 20px;
+            font-weight: bold;
+            color: #21d399;
+            margin-bottom: 10px;
+        }
+        ul {
+             list-style-type: none;
+             padding: 0;
+             display: flex;
+             flex-wrap: wrap;
+             justify-content: space-between;
+             margin: 0 -4px; /* 容器负边距 */
+        }
+        ul li {
+    background-color: #21d399;
+    color: white;
+    border-radius: 15px;
+    padding: 10px 8px;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 4px #1aa87d;
+    transition: all 0.3s ease;
+    width: calc(50% - 8px); /* 调整宽度计算 */
+    margin: 4px; /* 统一使用margin控制间距 */
+    white-space: normal;
+    overflow: hidden;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 55px;
+    font-size: 13px;
+    box-sizing: border-box;
+    flex: none;
+        }
+        ul li:hover {
+            background-color: #1aa87d;
+            transform: translateY(-1px);
+        }
+/* 超小屏幕适配 */
+@media (max-width: 360px) {
+
+ ul li {
+        font-size: 11px;
+        min-height: 48px;
+    }
+    
+    .nav-item {
+        font-size: 12px;
+        padding: 6px 3px;
+    }
+}
+
+/* 修复按钮点击区域 */
+ul li:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px #1aa87d;
+}
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .settings-btn {
+            background-color: #21d399;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin: 5px;
+            flex: 1 1 calc(50% - 10px);
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px #1aa87d;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-word;
+        }
+        .settings-btn:hover {
+            background-color: #1aa87d;
+        }
+        .cancel-btn {
+            background-color: #ff6b6b;
+            box-shadow: 0 4px #ff4757;
+        }
+        .cancel-btn:hover {
+            background-color: #ff4757;
+        }
+        .pause-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin: 5px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px #ff4757;
+            transition: background-color 0.3s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pause-btn:hover {
+            background-color: #ff4757;
+        }
+        .help {
+            background-color: #f2f4f1;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .help .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #21d399;
+            margin-bottom: 10px;
+        }
+        .help .content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .float-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #21d399;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px #1aa87d;
+            transition: background-color 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .float-btn.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .float-btn:hover {
+            background-color: #1aa87d;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 新增折叠栏样式 */
+        .accordion {
+            margin-top: 20px;
+        }
+        .accordion-item {
+            background-color: #f2f4f1;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .accordion-header {
+            background-color: #21d399;
+            color: white;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header:hover {
+            background-color: #1aa87d;
+        }
+        .accordion-header i {
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active i {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+        }
+        .accordion-content img {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .accordion-content p {
+            padding: 10px;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* 图片放大模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            overflow: auto;
+            position: relative;
+        }
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #ccc;
+        }
+
+        /* 加载进度条样式 */
+        .loading-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #f2f4f1;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background-color: #21d399;
+            transition: width 0.3s ease;
+        }
+        .loading-text {
+            text-align: center;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 400px) {
+ul {
+        margin: 0 -3px;
+    }
+    
+    ul li {
+        width: calc(50% - 6px);
+        margin: 3px;
+        padding: 8px 6px;
+        min-height: 50px;
+        font-size: 12px;
+    }
+            
+            .settings-btn {
+                flex: 1 1 calc(50% - 10px);
+                font-size: 14px;
+            }
+            
+            .help .content {
+                font-size: 13px;
+            }
+        }
+        .download-section {
+            margin-bottom: 20px;
+            display: block;
+        }
+        .ctrl {
+            margin-bottom: 20px;
+            display: none; /* 初始隐藏 */
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="top">
+            <div class="name">刘晓艳语音盒</div>
+        </div>
+
+        <div class="carousel">
+            <img src="1.jpg" alt="1.jpg" class="active">
+        </div>
+
+        <!-- 加载进度条 -->
+        <div class="loading-bar">
+            <div class="loading-progress" id="loading-progress"></div>
+        </div>
+        <div class="loading-text" id="loading-text">音频预加载中请稍等...<br><br>如果长时间卡住 请更换浏览器或刷新页面</div>
+        <div class="loading-text" id="loading-time"></div>
+
+        <!-- 修改ID为class -->
+        <div class="ctrl sound-section">
+            <div class="gongneng">音效区域①</div>
+            <ul>
+                <li m="1.mp3">西游记</li>
+                <li m="2.mp3">我嘞个天哪</li>
+                <li m="3.mp3">写成Go To West</li>
+                <li m="4.mp3">同学们这是</li>
+                <li m="5.mp3">上西天S翘翘</li>
+                <li m="6.mp3">还有人推荐红楼梦才搞笑</li>
+                <li m="7.mp3">Red Building Dream</li>
+                <li m="8.mp3">我嘞个天哪</li>
+                <li m="9.mp3">红色建筑物的梦</li>
+                <li m="10.mp3">你想不到我给你推荐一本书</li>
+                <li m="11.mp3">我的母亲</li>
+                <li m="12.mp3">My Mother</li>
+                <li m="13.mp3">行不行</li>
+                <li m="14.mp3">前南斯拉夫著名作家</li>
+                <li m="15.mp3">哈吧嘚哪嘛嗨呐吗嘿</li>
+                <li m="16.mp3">献给他母亲的一本书呢</li>
+                <li m="17.mp3">你怎么知道没有</li>
+
+
+        
+            </ul>
+        </div>
+
+        <!-- 修改ID为class -->
+        <div class="ctrl sound-section">
+            <div class="gongneng">音效区域②</div>
+            <ul>
+
+                <li m="18.mp3">回家吧好不好</li>
+                <li m="19.mp3">回家吧</li>
+                <li m="20.mp3">你比较适合做一摊...</li>
+                <li m="21.mp3">比较适合做一头Pig</li>
+                <li m="22.mp3">在家里面</li>
+                <li m="23.mp3">见过Pig吗</li>
+                <li m="24.mp3">Pig怎么活 你怎么活</li>
+
+
+        
+            </ul>
+        </div>
+
+        
+
+
+
+        <div class="ctrl" id="pause-section">
+            <button class="pause-btn" onclick="pauseAll()">停止所有音效/音乐</button>
+        </div>
+
+        <div class="ctrl" id="settings-section">
+            <div class="gongneng">功能设置</div>
+            <div class="button-container">
+                <button class="settings-btn" onclick="setDelay()">设置延迟播放</button>
+                <button class="settings-btn cancel-btn" onclick="cancelDelay()">取消延迟播放</button>
+                <button class="settings-btn" onclick="setAutoPlay()">设置自动播放</button>
+                <button class="settings-btn cancel-btn" onclick="cancelAutoPlay()">取消自动播放</button>
+                <button class="settings-btn" onclick="setLoop()">设置单击循环</button>
+                <button class="settings-btn cancel-btn" onclick="cancelLoop()">取消单击循环</button>
+            </div>
+        </div>
+        
+
+
+        <div class="help">
+            <div class="title">使用帮助</div>
+            <div class="content">
+                欢迎关注马里奥顶蘑菇Mario</p>哔哩哔哩UID:1644972548</p>抖音号：mushroommario</p>快手号：5174970934</p>微博：马里奥顶蘑菇Mario</p>公众号：顶菇趣软件</p>
+                点击按钮播放音效或音乐。请确保设备音量适中。点击"设置延迟播放"按钮，设置延迟时间（毫秒）。点击"设置自动播放"按钮，启用自动播放功能。点击"设置单击循环播放"按钮，启用单击循环播放功能。点击"停止所有音效/音乐"按钮，暂停当前播放的音频。
+            </div>
+        </div>
+
+        <!-- 新增折叠栏 -->
+        <div class="accordion">
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    安卓QQ变音教程（点击查看） <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-content">
+                    <p>这里是QQ变音教程的文字说明。以小米手机为例子，此功能仅支持有小屏功能的系统。游戏的话不支持因为官方做了限制对面听不到。</p>
+                    <img src="https://dinggubox-hh1g40cu.maozi.io/jc/1.jpg" alt="QQ变音教程" onclick="openModal(this)">
+                    <img src="https://dinggubox-hh1g40cu.maozi.io/jc/2.jpg" alt="QQ变音教程" onclick="openModal(this)">
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    安卓微信变音教程（点击查看） <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-content">
+                    <p>这里是微信变音教程的文字说明。以小米手机为例子，此功能仅支持有小屏功能的系统。游戏的话不支持因为官方做了限制对面听不到。</p>
+                    <img src="https://dinggubox-hh1g40cu.maozi.io/jc/1.jpg" alt="微信变音教程" onclick="openModal(this)">
+                    <img src="https://dinggubox-hh1g40cu.maozi.io/jc/3.jpg" alt="微信变音教程" onclick="openModal(this)">
+                </div>
+            </div>
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    安卓苹果手机没声音（点击查看） <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-content">
+                    <p>请把手机的静音模式关闭即可，确保音量适中。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片放大模态框 -->
+    <div class="modal" id="imageModal">
+        <span class="close" onclick="closeModal()">×</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="放大图片">
+        </div>
+    </div>
+
+    <div class="float-btn" onclick="scrollToTop()">↑</div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // JavaScript代码保持不变，只需确保选择器更新为class
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffers = {};
+        let audioList = [];
+        let currentAudio = null;
+        let delayTime = 0;
+        let autoPlayEnabled = false;
+        let loopEnabled = false;
+        let autoPlayIndex = 0;
+
+        let startTime = Date.now();
+        let totalFiles = 0;
+        let loadedFiles = 0;
+
+        function preloadAudio() {
+            const audioElements = document.querySelectorAll('ul li');
+            totalFiles = audioElements.length;
+
+            audioElements.forEach((item, index) => {
+                const soundUrl = item.getAttribute('m');
+                fetch(soundUrl)
+                    .then(response => response.arrayBuffer())
+                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                    .then(audioBuffer => {
+                        audioBuffers[soundUrl] = audioBuffer;
+                        loadedFiles++;
+                        updateLoadingProgress();
+                    })
+                    .catch(error => {
+                        console.error(`Failed to load audio: ${soundUrl}`, error);
+                        loadedFiles++;
+                        updateLoadingProgress();
+                    });
+            });
+        }
+
+        function updateLoadingProgress() {
+            const progress = (loadedFiles / totalFiles) * 100;
+            const progressBar = document.getElementById('loading-progress');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            const remainingFiles = totalFiles - loadedFiles;
+            const estimatedTime = (elapsedTime / loadedFiles) * remainingFiles;
+
+            const loadingTime = document.getElementById('loading-time');
+            if (loadingTime) {
+                loadingTime.textContent = `预计剩余时间: ${estimatedTime.toFixed(1)}秒`;
+            }
+
+            if (loadedFiles >= totalFiles) {
+                hideLoadingBar();
+                showControls();
+            }
+        }
+
+        function hideLoadingBar() {
+            const loadingBar = document.querySelector('.loading-bar');
+            const loadingText = document.getElementById('loading-text');
+            const loadingTime = document.getElementById('loading-time');
+            if (loadingBar && loadingText && loadingTime) {
+                loadingBar.style.display = 'none';
+                loadingText.style.display = 'none';
+                loadingTime.style.display = 'none';
+            }
+        }
+
+        function showControls() {
+            const controls = document.querySelectorAll('.ctrl');
+            controls.forEach(control => {
+                control.style.display = 'block';
+            });
+        }
+
+        window.addEventListener('load', () => {
+            preloadAudio();
+        });
+
+        function playAudio(source) {
+            source.start();
+            if (loopEnabled) {
+                source.loop = true;
+            } else {
+                source.loop = false;
+            }
+        }
+
+        function playNext() {
+            if (!autoPlayEnabled) return;
+
+            const audioElements = document.querySelectorAll('ul li');
+            if (autoPlayIndex >= audioElements.length) {
+                autoPlayIndex = 0;
+            }
+
+            const soundUrl = audioElements[autoPlayIndex].getAttribute('m');
+            const audioBuffer = audioBuffers[soundUrl];
+
+            if (audioBuffer) {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+
+                audioList.forEach(source => source.stop());
+                audioList = [source];
+
+                currentAudio = source;
+
+                source.onended = () => {
+                    autoPlayIndex++;
+                    playNext();
+                };
+
+                if (delayTime > 0) {
+                    setTimeout(() => {
+                        playAudio(source);
+                    }, delayTime);
+                } else {
+                    playAudio(source);
+                }
+            }
+        }
+
+        document.querySelectorAll('ul li').forEach(item => {
+            item.addEventListener('click', () => {
+                const soundUrl = item.getAttribute('m');
+                const audioBuffer = audioBuffers[soundUrl];
+
+                if (audioBuffer) {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+
+                    audioList.forEach(source => source.stop());
+                    audioList = [source];
+
+                    currentAudio = source;
+
+                    if (delayTime > 0) {
+                        setTimeout(() => {
+                            playAudio(source);
+                        }, delayTime);
+                    } else {
+                        playAudio(source);
+                    }
+                }
+            });
+        });
+
+        function pauseAll() {
+            audioList.forEach(source => source.stop());
+            audioList = [];
+            autoPlayEnabled = false;
+            loopEnabled = false;
+            delayTime = 0;
+            currentAudio = null;
+            showToast('已停止所有音效/音乐');
+        }
+
+        function setDelay() {
+            delayTime = prompt('请输入延迟时间（毫秒）：');
+            if (delayTime !== null && !isNaN(delayTime)) {
+                delayTime = parseInt(delayTime);
+                showToast(`已设置延迟播放：${delayTime}毫秒`);
+            } else {
+                showToast('请输入有效的数字');
+            }
+        }
+
+        function cancelDelay() {
+            delayTime = 0;
+            showToast('已取消延迟播放');
+        }
+
+        function setAutoPlay() {
+            autoPlayEnabled = true;
+            autoPlayIndex = 0;
+            playNext();
+            showToast('已启用自动播放');
+        }
+
+        function cancelAutoPlay() {
+            autoPlayEnabled = false;
+            showToast('已取消自动播放');
+        }
+
+        function setLoop() {
+            loopEnabled = true;
+            showToast('已启用单击循环');
+        }
+
+function cancelLoop() {
+    loopEnabled = false;
+    
+    // 修复：如果有当前正在播放的音频，立即更新其循环状态
+    if (currentAudio) {
+        currentAudio.loop = false;
+    }
+    
+    showToast('已取消单击循环');
+}
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function toggleAccordion(header) {
+            const item = header.parentElement;
+            const content = item.querySelector('.accordion-content');
+            const icon = header.querySelector('i');
+
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.classList.remove('active');
+            } else {
+                content.classList.add('open');
+                icon.classList.add('active');
+            }
+        }
+
+        function openModal(img) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'flex';
+            modalImg.src = img.src;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function openLink(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

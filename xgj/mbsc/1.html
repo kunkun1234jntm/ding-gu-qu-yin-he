@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曼波语音生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: #f2f4f1;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #21d399, #21d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: #21d399;
+        }
+        
+        .text-input::placeholder {
+            color: #aaa;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .generate-btn:hover {
+            background: #1aa87d;
+        }
+        
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .audio-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f9f8;
+            border-radius: 12px;
+            border: 2px dashed #21d399;
+        }
+        
+        .audio-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #21d399;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        
+        .play-btn {
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .play-btn:hover {
+            background: #1aa87d;
+        }
+        
+        .download-btn {
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .download-btn:hover {
+            background: #1aa87d;
+        }
+        
+        .progress-container {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #21d399;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(78, 205, 196, 0.1);
+            border-top: 4px solid #21d399;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .error-msg {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: currentColor;
+            mask-size: cover;
+            -webkit-mask-size: cover;
+        }
+        
+        .icon-mambo {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-play {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-pause {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19h4V5H6v14zm8-14v14h4V5h-4z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 19h4V5H6v14zm8-14v14h4V5h-4z'/%3E%3C/svg%3E");
+        }
+        
+        .icon-download {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z'/%3E%3C/svg%3E");
+        }
+        
+        .hint {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .example-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+            font-style: italic;
+        }
+/* 添加在现有的 CSS 中 */
+.help-section {
+    margin-top: 20px;
+}
+
+.help-title {
+    color: #21d399;
+    font-size: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.help-content {
+    margin-bottom: 20px;
+}
+
+.help-step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 0;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #21d399;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 12px;
+}
+
+.step-text {
+    color: #555;
+    font-size: 14px;
+}
+
+.help-notice {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #21d399;
+}
+
+.help-notice p {
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.help-notice p:last-child {
+    margin-bottom: 0;
+}
+/* 添加在现有的 CSS 中 */
+.hero-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.main-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #21d399;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* 替换原来的轮播图CSS */
+.carousel {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+}
+
+.carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.dot.active {
+    background: #21d399;
+}
+    </style>
+</head>
+<body>
+
+        <!-- 错误提示 -->
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- 提示信息 -->
+        <div class="toast" id="toast"></div>
+        
+        
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label" for="textInput">输入文本</label>
+                <textarea class="text-input" id="textInput" placeholder="例如：不管了，直接加钠"></textarea>
+                <div class="example-text">提示：文本长度建议在10-100字之间</div>
+            </div>
+            
+            <button class="generate-btn" id="generateBtn">
+                <span class="icon icon-mambo"></span>
+                <span>生成曼波语音</span>
+            </button>
+            
+            <div class="audio-preview hidden" id="audioPreview">
+                <div class="audio-title">曼波语音预览</div>
+                
+                <div class="audio-controls">
+                    <button class="play-btn" id="playBtn">
+                        <span class="icon icon-play"></span>
+                        <span>播放</span>
+                    </button>
+                    <button class="download-btn" id="downloadBtn">
+                        <span class="icon icon-download"></span>
+                        <span>下载</span>
+                    </button>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加载指示器 -->
+        <div class="card hidden" id="loading">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <div>正在生成语音，请稍候...</div>
+            </div>
+
+
+        </div>
+       
+
+
+    <script>
+        // DOM元素
+        const textInput = document.getElementById('textInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const audioPreview = document.getElementById('audioPreview');
+        const playBtn = document.getElementById('playBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const loading = document.getElementById('loading');
+        const toast = document.getElementById('toast');
+        const errorMsg = document.getElementById('errorMsg');
+        const progress = document.getElementById('progress');
+        const currentTime = document.getElementById('currentTime');
+        const duration = document.getElementById('duration');
+        
+        // API配置
+        const VOICE_API = 'https://api.milorapart.top/apis/mbAIsc';
+        
+        // 当前生成的音频URL和音频对象
+        let currentAudioUrl = '';
+        let audio = new Audio();
+        let isPlaying = false;
+        
+// 添加在 initApp 函数中
+function initApp() {
+    setupEventListeners();
+
+}
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 生成按钮点击事件
+            generateBtn.addEventListener('click', generateVoice);
+            
+            // 播放按钮点击事件
+            playBtn.addEventListener('click', togglePlay);
+            
+            // 下载按钮点击事件
+            downloadBtn.addEventListener('click', downloadAudio);
+            
+            // 音频事件监听
+            audio.addEventListener('loadedmetadata', updateDuration);
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', onAudioEnded);
+            
+            // 进度条点击事件
+            progress.parentElement.addEventListener('click', seekAudio);
+            
+            // Ctrl+回车键触发生成
+            textInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    generateVoice();
+                }
+            });
+        }
+        
+        // 生成语音
+        async function generateVoice() {
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                showError('请输入要转换的文本');
+                return;
+            }
+            
+            if (text.length < 2) {
+                showError('文本太短，请输入至少2个字符');
+                return;
+            }
+            
+            if (text.length > 500) {
+                showError('文本过长，请输入少于500个字符');
+                return;
+            }
+            
+            // 显示加载
+            showLoading();
+            hideError();
+            
+            // 隐藏音频预览
+            audioPreview.classList.add('hidden');
+            
+            try {
+                // 构建API URL
+                const apiUrl = `${VOICE_API}?text=${encodeURIComponent(text)}&format=mp3`;
+                
+                // 获取音频URL
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                if (data.code === 200 && data.url) {
+                    currentAudioUrl = data.url;
+                    audio.src = currentAudioUrl;
+                    
+                    // 等待音频加载
+                    await new Promise((resolve, reject) => {
+                        audio.addEventListener('canplaythrough', resolve);
+                        audio.addEventListener('error', reject);
+                        
+                        // 设置超时
+                        setTimeout(() => reject(new Error('音频加载超时')), 10000);
+                    });
+                    
+                    // 显示音频预览
+                    audioPreview.classList.remove('hidden');
+                    
+                    // 显示成功提示
+                    showToast('语音生成成功！');
+                    
+                    // 自动播放音频
+                    setTimeout(() => {
+                        audio.play();
+                        isPlaying = true;
+                        updatePlayButton();
+                    }, 500);
+                } else {
+                    throw new Error(data.msg || '生成语音失败');
+                }
+                
+            } catch (error) {
+                console.error('生成语音错误:', error);
+                showError('生成语音失败，请稍后重试');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // 切换播放/暂停
+        function togglePlay() {
+            if (!currentAudioUrl) return;
+            
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                audio.play();
+            }
+            isPlaying = !isPlaying;
+            updatePlayButton();
+        }
+        
+        // 更新播放按钮状态
+        function updatePlayButton() {
+            const icon = playBtn.querySelector('.icon');
+            const text = playBtn.querySelector('span:last-child');
+            
+            if (isPlaying) {
+                icon.className = 'icon icon-pause';
+                text.textContent = '暂停';
+            } else {
+                icon.className = 'icon icon-play';
+                text.textContent = '播放';
+            }
+        }
+        
+        // 音频播放结束
+        function onAudioEnded() {
+            isPlaying = false;
+            updatePlayButton();
+            progress.style.width = '0%';
+            currentTime.textContent = '0:00';
+        }
+        
+        // 更新音频时长
+        function updateDuration() {
+            const minutes = Math.floor(audio.duration / 60);
+            const seconds = Math.floor(audio.duration % 60);
+            duration.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 更新进度条
+        function updateProgress() {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progress.style.width = `${percent}%`;
+            
+            const minutes = Math.floor(audio.currentTime / 60);
+            const seconds = Math.floor(audio.currentTime % 60);
+            currentTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 点击进度条跳转
+        function seekAudio(e) {
+            if (!audio.duration) return;
+            
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
+        
+        // 下载音频
+        function downloadAudio() {
+            if (!currentAudioUrl) {
+                showError('没有可下载的音频');
+                return;
+            }
+            
+            // 创建下载链接
+             const text = textInput.value.trim();
+
+            iapp.s('sss.manboyinpin', currentAudioUrl);
+            iapp.s('sss.yinpinmingzi', text);
+            iapp.fn('js.download("成功")');
+        }
+        
+        // UI辅助函数
+        function showLoading() {
+            loading.classList.remove('hidden');
+            generateBtn.disabled = true;
+        }
+        
+        function hideLoading() {
+            loading.classList.add('hidden');
+            generateBtn.disabled = false;
+        }
+        
+        function showToast(message) {
+            iapp.fn('js.showToast("'+message+'")');
+        }
+        
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+        }
+        
+        function hideError() {
+            errorMsg.style.display = 'none';
+        }
+
+        
+        // 页面加载完成后初始化应用
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

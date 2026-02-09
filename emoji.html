@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji表情合成器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f1; /* 背景颜色 */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #main {
+            max-width: 400px;
+            width: 100%;
+            background-color: #FFFFFF; /* 主内容背景颜色 */
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF4500; /* 橙红色 */
+            margin-bottom: 20px;
+        }
+        .input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-container input {
+            width: 60px;
+            height: 60px;
+            font-size: 32px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .input-container input:focus {
+            border-color: #21d399; /* 闪蓝色 */
+        }
+        .emoji-selector {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .emoji-selector span {
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .emoji-selector span:hover {
+            transform: scale(1.2); /* 鼠标悬停时放大 */
+        }
+        .generate-btn {
+            background-color: #21d399; /* 闪蓝色 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .generate-btn:hover {
+            background-color: #1aa87f; /* 深天蓝色 */
+        }
+        .emoji-result {
+            margin-top: 20px;
+            display: none; /* 默认隐藏 */
+        }
+        .emoji-result img {
+            max-width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .emoji-result img:hover {
+            transform: scale(1.05); /* 鼠标悬停时轻微放大 */
+        }
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .action-buttons button {
+            background-color: #21d399; /* 闪蓝色 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .action-buttons button:hover {
+            background-color: #1aa87f; /* 深天蓝色 */
+        }
+        .help {
+            background-color: #f2f4f1; /* 使用帮助背景颜色 */
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .help .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF4500; /* 橙红色 */
+            margin-bottom: 10px;
+        }
+        .help .content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            cursor: zoom-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <h1>Emoji表情合成器</h1>
+
+        <!-- 输入框和生成按钮 -->
+        <div class="input-container">
+            <input type="text" id="emoji1" maxlength="2" placeholder="">
+            <input type="text" id="emoji2" maxlength="2" placeholder="">
+        </div>
+
+     <!-- 合成结果 -->
+        <div class="emoji-result" id="emoji-result">
+            <img id="emoji-image" src="" alt="合成表情">
+            <div class="action-buttons">
+            </div>
+        </div>
+
+
+
+     <button class="generate-btn" onclick="generateEmoji()">合成表情</button>
+    
+        <div class="emoji-selector">
+            <div class="content">
+            </div>
+        </div>
+
+        <!-- Emoji选择菜单 -->
+  
+        <div class="emoji-selector">
+            <span onclick="selectEmoji('🥱')">🥱</span>
+            <span onclick="selectEmoji('😊')">😊</span>
+            <span onclick="selectEmoji('😃')">😃</span>
+            <span onclick="selectEmoji('😄')">😄</span>
+            <span onclick="selectEmoji('😆')">😆</span>
+            <span onclick="selectEmoji('😂')">😂</span>
+            <span onclick="selectEmoji('🤣')">🤣</span>
+            <span onclick="selectEmoji('😭')">😭</span>
+            <span onclick="selectEmoji('🤔')">🤔</span>
+            <span onclick="selectEmoji('😌')">😌</span>
+            <span onclick="selectEmoji('🥰')">🥰</span>
+            <span onclick="selectEmoji('😍')">😍</span>
+            <span onclick="selectEmoji('😘')">😘</span>
+            <span onclick="selectEmoji('😚')">😚</span>
+            <span onclick="selectEmoji('😜')">😜</span>
+            <span onclick="selectEmoji('😝')">😝</span>
+            <span onclick="selectEmoji('😔')">😔</span>
+            <span onclick="selectEmoji('🤗')">🤗</span>
+            <span onclick="selectEmoji('🤕')">🤕</span>
+            <span onclick="selectEmoji('🥺')">🥺</span>
+            <span onclick="selectEmoji('😁')">😁</span>
+            <span onclick="selectEmoji('🙂')">🙂</span>
+            <span onclick="selectEmoji('😉')">😉</span>
+            <span onclick="selectEmoji('😏')">😏</span>
+            <span onclick="selectEmoji('☺️')">☺️</span>
+            <span onclick="selectEmoji('🙃')">🙃</span>
+            <span onclick="selectEmoji('🤓')">🤓</span>
+            <span onclick="selectEmoji('🤒')">🤒</span>
+            <span onclick="selectEmoji('🤐')">🤐</span>
+            <span onclick="selectEmoji('🤑')">🤑</span>
+            <span onclick="selectEmoji('😷')">😷</span>
+            <span onclick="selectEmoji('😠')">😠</span>
+            <span onclick="selectEmoji('😡')">😡</span>
+            <span onclick="selectEmoji('😕')">😕</span>
+            <span onclick="selectEmoji('🙁')">🙁</span>
+            <span onclick="selectEmoji('😢')">😢</span>
+            <span onclick="selectEmoji('😥')">😥</span>
+            <span onclick="selectEmoji('😖')">😖</span>
+            <span onclick="selectEmoji('😣')">😣</span>
+            <span onclick="selectEmoji('😱')">😱</span>
+            <span onclick="selectEmoji('😰')">😰</span>
+            <span onclick="selectEmoji('😨')">😨</span>
+            <span onclick="selectEmoji('😫')">😫</span>
+            <span onclick="selectEmoji('☹️')">☹️</span>
+            <span onclick="selectEmoji('😪')">😪</span>
+            <span onclick="selectEmoji('😞')">😞</span>
+            <span onclick="selectEmoji('😓')">😓</span>
+            <span onclick="selectEmoji('😩')">😩</span>
+            <span onclick="selectEmoji('😀')">😀</span>
+            <span onclick="selectEmoji('😅')">😅</span>
+            <span onclick="selectEmoji('😲')">😲</span>
+            <span onclick="selectEmoji('😇')">😇</span>
+            <span onclick="selectEmoji('😛')">😛</span>
+            <span onclick="selectEmoji('😒')">😒</span>
+            <span onclick="selectEmoji('😑')">😑</span>
+            <span onclick="selectEmoji('😐')">😐</span>
+            <span onclick="selectEmoji('😬')">😬</span>
+            <span onclick="selectEmoji('😎')">😎</span>
+            <span onclick="selectEmoji('😤')">😤</span>
+            <span onclick="selectEmoji('🤮')">🤮</span>
+            <span onclick="selectEmoji('😵')">😵</span>
+            <span onclick="selectEmoji('😋')">😋</span>
+            <span onclick="selectEmoji('😟')">😟</span>
+            <span onclick="selectEmoji('😧')">😧</span>
+            <span onclick="selectEmoji('😯')">😯</span>
+            <span onclick="selectEmoji('😮')">😮</span>
+            <span onclick="selectEmoji('😦')">😦</span>
+            <span onclick="selectEmoji('😗')">😗</span>
+            <span onclick="selectEmoji('😙')">😙</span>
+            <span onclick="selectEmoji('😶')">😶</span>
+            <span onclick="selectEmoji('🤩')">🤩</span>
+            <span onclick="selectEmoji('🤨')">🤨</span>
+            <span onclick="selectEmoji('🤭')">🤭</span>
+            <span onclick="selectEmoji('🤬')">🤬</span>
+            <span onclick="selectEmoji('🧐')">🧐</span>
+            <span onclick="selectEmoji('🤫')">🤫</span>
+            <span onclick="selectEmoji('🤤')">🤤</span>
+            <span onclick="selectEmoji('🤪')">🤪</span>
+            <span onclick="selectEmoji('🤯')">🤯</span>
+            <span onclick="selectEmoji('🥳')">🥳</span>
+            <span onclick="selectEmoji('🤥')">🤥</span>
+            <span onclick="selectEmoji('🤢')">🤢</span>
+            <span onclick="selectEmoji('🤡')">🤡</span>
+            <span onclick="selectEmoji('🥵')">🥵</span>
+            <span onclick="selectEmoji('🥶')">🥶</span>
+            <span onclick="selectEmoji('🙄')">🙄</span>
+            <span onclick="selectEmoji('😳')">😳</span>
+            <span onclick="selectEmoji('🤧')">🤧</span>
+            <span onclick="selectEmoji('🥴')">🥴</span>
+            <span onclick="selectEmoji('😴')">😴</span>
+            <span onclick="selectEmoji('🤠')">🤠</span>
+            <span onclick="selectEmoji('🫡')">🫡</span>
+            <span onclick="selectEmoji('😮‍💨')">😮‍💨</span>
+            <span onclick="selectEmoji('😵‍💫')">😵‍💫</span>
+            <span onclick="selectEmoji('😶‍🌫️')">😶‍🌫️</span>
+            <span onclick="selectEmoji('😈')">😈</span>
+            <span onclick="selectEmoji('👿')">👿</span>
+            <span onclick="selectEmoji('💀')">💀</span>
+            <span onclick="selectEmoji('👻')">👻</span>
+            <span onclick="selectEmoji('☠️')">☠️</span>
+            <span onclick="selectEmoji('👽')">👽</span>
+            <span onclick="selectEmoji('💩')">💩</span>
+        </div>
+
+          <div class="emoji-selector">
+            <div class="content">
+            </div>
+        </div>
+
+   
+        <!-- 使用帮助 -->
+        <div class="help">
+            <div class="title">使用帮助</div>
+            <div class="content">
+               【使用教程】 输入两个Emoji表情，点击“合成表情”按钮生成合成图片。<br><br>【保存图片问题】长按合成的表情图片即可保存。
+            </div>
+        </div>
+
+        <!-- 图片放大模态框 -->
+        <div id="modal" class="modal" onclick="closeModal()">
+            <img id="modal-image" src="" alt="放大图片">
+        </div>
+    </div>
+
+    <script>
+        // 选择Emoji表情
+        function selectEmoji(emoji) {
+            const emoji1 = document.getElementById('emoji1');
+            const emoji2 = document.getElementById('emoji2');
+
+            if (!emoji1.value) {
+                emoji1.value = emoji;
+            } else if (!emoji2.value) {
+                emoji2.value = emoji;
+            } else {
+                emoji1.value = emoji;
+                emoji2.value = '';
+            }
+        }
+
+        // 生成Emoji合成图片
+        function generateEmoji() {
+            const emoji1 = document.getElementById('emoji1').value.trim();
+            const emoji2 = document.getElementById('emoji2').value.trim();
+
+            if (!emoji1 || !emoji2) {
+                alert('请输入两个Emoji表情！');
+                return;
+            }
+
+            const apiUrl = `https://oiapi.net/API/EmojiMix/${encodeURIComponent(emoji1)}/${encodeURIComponent(emoji2)}`;
+            const emojiResult = document.getElementById('emoji-result');
+            const emojiImage = document.getElementById('emoji-image');
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 1 && data.data.url) {
+                        emojiImage.src = data.data.url; // 设置图片源
+                        emojiResult.style.display = 'block'; // 显示结果区域
+                    } else {
+                        alert('合成失败，请检查输入的Emoji表情！');
+                        emojiResult.style.display = 'none'; // 隐藏结果区域
+                    }
+                })
+                .catch(error => {
+                    console.error('合成失败:', error);
+                    alert('网络错误，请稍后重试！');
+                    emojiResult.style.display = 'none'; // 隐藏结果区域
+                });
+        }
+
+        // 下载图片
+        function downloadImage() {
+            const emojiImage = document.getElementById('emoji-image');
+            const imageUrl = emojiImage.src;
+
+            if (!imageUrl) {
+                alert('没有可下载的图片！');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = 'emoji-mix.png'; // 下载文件名
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 打开图片放大模态框
+        function openModal() {
+            const modal = document.getElementById('modal');
+            const modalImage = document.getElementById('modal-image');
+            const emojiImage = document.getElementById('emoji-image');
+
+            if (!emojiImage.src) {
+                alert('没有可放大的图片！');
+                return;
+            }
+
+            modalImage.src = emojiImage.src;
+            modal.style.display = 'flex';
+        }
+
+        // 关闭图片放大模态框
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

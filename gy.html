@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background-color: #e0f7fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-info h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .user-info p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .link-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .link-list li:last-child {
+            border-bottom: none;
+        }
+        .link-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .link-text {
+            flex: 1;
+        }
+        .link-arrow {
+            color: #999;
+        }
+        .intro p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <!-- 这里可以替换为实际头像图片 -->
+                    <img src="./pic/mla2.png" alt="头像" style="width:100%;height:100%;border-radius:50%;">
+                </div>
+                <div class="user-info">
+                    <h2>马里奥顶蘑菇Mario</h2>
+                    <p>b站uid:1644972548</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>联系我们</h3>
+            <ul class="link-list">
+                <li>
+                    <a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=7xtwUG7bbz4tFZyak18NuLutbb6tCCew&authKey=wmBIvaX5kxjEA4fck0JbGe22VMqOedgzMUmo2kV24t3DF3gm5wFI9YvAFMr3LSXc&noverify=0&group_code=526248386" target="_blank" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
+                        <div class="link-icon">
+                            <!-- 图标可替换 -->
+                            <img src="./pic/ui1.png" alt="Q群图标" style="width:100%;height:100%;">
+                        </div>
+                        <div class="link-text">软件Q群</div>
+                        <div class="link-arrow">></div>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://qm.qq.com/q/Mi3SMXp6w2" target="_blank" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
+                        <div class="link-icon">
+                            <img src="./pic/ui2.png" alt="联系作者图标" style="width:100%;height:100%;">
+                        </div>
+                        <div class="link-text">联系作者</div>
+                        <div class="link-arrow">></div>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://space.bilibili.com/1644972548" target="_blank" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
+                        <div class="link-icon">
+                            <img src="./pic/ui3.png" alt="B站图标" style="width:100%;height:100%;">
+                        </div>
+                        <div class="link-text">B站账号</div>
+                        <div class="link-arrow">></div>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://v.douyin.com/6ycrqxbWEPA/" target="_blank" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
+                        <div class="link-icon">
+                            <img src="./pic/ui4.png" alt="抖音图标" style="width:100%;height:100%;">
+                        </div>
+                        <div class="link-text">抖音账号</div>
+                        <div class="link-arrow">></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h3>友情链接</h3>
+            <ul class="link-list">
+                <li>
+                    <a href="https://wwma.lanzoup.com/b020btzicj" target="_blank" style="text-decoration:none; color:inherit; display:flex; align-items:center;">
+                        <div class="link-icon" style="background-color:#f5f5f5;">
+                            <img src="./pic/yyh.jpg" alt="趣味语音盒图标" style="width:100%;height:100%;">
+                        </div>
+                        <div class="link-text">趣味语音盒</div>
+                        <div class="link-arrow">></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card intro">
+            <h3>关于我们</h3>
+            <p>我是一个小小的up主，专门制作整活软件或游戏<br>请在b站关注我，我会整更多的活给你！</p>
+        </div>
+    </div>
+</body>
+</html>

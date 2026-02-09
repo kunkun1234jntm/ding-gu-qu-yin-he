@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级马里奥杂交版 - 启动器</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a73e8;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .slider {
+            width: 100%;
+            height: 300px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .slider img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .slider img.active {
+            display: block;
+            animation: fade 1s;
+        }
+        
+        @keyframes fade {
+            from {opacity: 0.4;}
+            to {opacity: 1;}
+        }
+        
+        .btn {
+            display: block;
+            width: 200px;
+            height: 50px;
+            background-color: #ffcc00;
+            color: #1a73e8;
+            text-align: center;
+            line-height: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 25px;
+            margin: 0 auto 20px;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            background-color: #ffdd33;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+        
+        .section p {
+            line-height: 1.6;
+        }
+        
+        a {
+            color: #ffcc00;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>超级马里奥杂交版</h1>
+        
+        <div class="slider" id="slider">
+            <!-- 这里可以添加轮播图图片 -->
+            <img src="./1.png" class="active">
+            <img src="./2.png">
+            <img src="./3.png">
+        </div>
+        
+        <a href="https://mariohe-qp2830cu.maozi.io/" class="btn">启动游戏</a>
+        
+        <div class="section">
+            <h2>使用帮助</h2>
+            <p>
+                <strong>电脑端控制：</strong><br>
+                A、D键控制角色移动，K键跳，S键下蹲/钻管道，J键发子弹<br><br>
+                <strong>手机端控制：</strong><br>
+                （首先要在角色选择界面点击“Mobile Controls”）<br>
+                摇杆往左/右 控制角色移动，纯黑色键跳（此键在摇杆移动时显示），FIRE键发子弹，摇杆往下 钻管道/下蹲
+            </p>
+        </div>
+        
+  
+    </div>
+
+    <script>
+        // 简单的轮播图脚本
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('#slider img');
+        
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+        
+        // 每3秒切换一次
+        setInterval(nextSlide, 3000);
+    </script>
+</body>
+</html>

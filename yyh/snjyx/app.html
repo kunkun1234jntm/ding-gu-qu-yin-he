@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP功能区域</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f2f4f1;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #main {
+            /* max-width: 383px; */
+            width: 100%;
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            position: relative;
+        }
+        .top {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .top .name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #21d399;
+        }
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 130px;
+            overflow: hidden;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .carousel img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .carousel img.active {
+            opacity: 1;
+        }
+        .marquee {
+            background-color: #21d399;
+            color: white;
+            padding: 10px;
+            border-radius: 15px;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-bottom: 20px;
+        }
+        .marquee span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 10s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .ctrl {
+            margin-bottom: 20px;
+            display: none; /* 初始隐藏 */
+        }
+        .gongneng {
+            font-size: 20px;
+            font-weight: bold;
+            color: #21d399;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background-color: #21d399;
+            color: white;
+            border-radius: 15px;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 4px #1aa87d;
+            transition: background-color 0.3s ease;
+        }
+        ul li:hover {
+            background-color: #1aa87d;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .settings-btn {
+            background-color: #21d399;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin: 5px;
+            flex: 1 1 calc(50% - 10px);
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px #1aa87d;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+        .settings-btn:hover {
+            background-color: #1aa87d;
+        }
+        .cancel-btn {
+            background-color: #ff6b6b;
+            box-shadow: 0 4px #ff4757;
+        }
+        .cancel-btn:hover {
+            background-color: #ff4757;
+        }
+        .pause-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin: 5px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px #ff4757;
+            transition: background-color 0.3s ease;
+        }
+        .pause-btn:hover {
+            background-color: #ff4757;
+        }
+        .help {
+            background-color: #f2f4f1;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .help .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #21d399;
+            margin-bottom: 10px;
+        }
+        .help .content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .float-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #21d399;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px #1aa87d;
+            transition: background-color 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .float-btn.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .float-btn:hover {
+            background-color: #1aa87d;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 新增折叠栏样式 */
+        .accordion {
+            margin-top: 20px;
+        }
+        .accordion-item {
+            background-color: #f2f4f1;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .accordion-header {
+            background-color: #21d399;
+            color: white;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header:hover {
+            background-color: #1aa87d;
+        }
+        .accordion-header i {
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active i {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+        }
+        .accordion-content img {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .accordion-content p {
+            padding: 10px;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* 图片放大模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            overflow: auto;
+            position: relative;
+        }
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #ccc;
+        }
+
+        /* 加载进度条样式 */
+        .loading-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #f2f4f1;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background-color: #21d399;
+            transition: width 0.3s ease;
+        }
+        .loading-text {
+            text-align: center;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+
+
+        <!-- 加载进度条 -->
+        <div class="loading-bar">
+            <div class="loading-progress" id="loading-progress"></div>
+        </div>
+        <div class="loading-text" id="loading-text">音频预加载中请稍等...<br><br>如果长时间卡住 请更换浏览器或刷新页面</div>
+        <div class="loading-text" id="loading-time"></div>
+
+              <div class="ctrl" id="sound-section">
+            <div class="gongneng">音效区域</div>
+            <ul>
+                 <li m="1.mp3">那我们三年级</li>
+                <li m="2.mp3">又算什么呢</li>
+                <li m="3.mp3">嗯？</li>
+                <li m="4.mp3">小妹妹</li>
+                <li m="5.mp3">珍惜你幼儿园和一年级</li>
+                <li m="6.mp3">珍惜吧</li>
+       
+            </ul>
+        </div>
+
+        <div class="ctrl" id="sound-section">
+            <div class="gongneng">单字区域</div>
+            <ul>
+                 <li m="7.mp3">珍</li>
+                <li m="8.mp3">惜</li>
+                <li m="9.mp3">你</li>
+                <li m="10.mp3">的</li>
+                <li m="11.mp3">幼</li>
+                <li m="12.mp3">儿</li>
+                <li m="13.mp3">园</li>
+                <li m="14.mp3">和</li>
+                <li m="15.mp3">一</li>
+                <li m="16.mp3">年</li>
+                <li m="17.mp3">只因</li>
+                <li m="18.mp3">吧</li>
+       
+            </ul>
+        </div>
+
+
+
+        <div class="ctrl">
+            <div class="gongneng">音乐区域</div>
+            <ul>
+
+       
+                <li m="yy1.mp3">切片鬼畜版</li>
+                <li m="yy2.mp3">三年级DJ版</li>
+
+            </ul>
+        </div>
+
+
+        <div class="ctrl" id="pause-section">
+            <button class="pause-btn" onclick="pauseAll()">停止所有音效/音乐</button>
+        </div>
+
+        <div class="ctrl" id="settings-section">
+            <div class="gongneng">功能设置</div>
+            <div class="button-container">
+                <button class="settings-btn" onclick="setDelay()">设置延迟播放</button>
+                <button class="settings-btn cancel-btn" onclick="cancelDelay()">取消延迟播放</button>
+                <button class="settings-btn" onclick="setAutoPlay()">设置自动播放</button>
+                <button class="settings-btn cancel-btn" onclick="cancelAutoPlay()">取消自动播放</button>
+                <button class="settings-btn" onclick="setLoop()">设置单击循环</button>
+                <button class="settings-btn cancel-btn" onclick="cancelLoop()">取消单击循环</button>
+            </div>
+        </div>
+
+        <div class="help">
+            <div class="title">使用帮助</div>
+            <div class="content">
+                点击按钮播放音效或音乐。请确保设备音量适中。点击“设置延迟播放”按钮，设置延迟时间（毫秒）。点击“设置自动播放”按钮，启用自动播放功能。点击“设置单击循环播放”按钮，启用单击循环播放功能。点击“停止所有音效/音乐”按钮，暂停当前播放的音频。
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 图片放大模态框 -->
+    <div class="modal" id="imageModal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="放大图片">
+        </div>
+    </div>
+
+    <div class="float-btn" onclick="scrollToTop()">↑</div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffers = {};
+        let audioList = [];
+        let currentAudio = null;
+        let delayTime = 0;
+        let autoPlayEnabled = false;
+        let loopEnabled = false;
+        let autoPlayIndex = 0; // 自动播放索引
+
+        let startTime = Date.now(); // 记录加载开始时间
+        let totalFiles = 0; // 总文件数
+        let loadedFiles = 0; // 已加载文件数
+
+        // 预加载所有音频文件
+        function preloadAudio() {
+            const audioElements = document.querySelectorAll('ul li');
+            totalFiles = audioElements.length;
+
+            audioElements.forEach((item, index) => {
+                const soundUrl = item.getAttribute('m');
+                fetch(soundUrl)
+                    .then(response => response.arrayBuffer())
+                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                    .then(audioBuffer => {
+                        audioBuffers[soundUrl] = audioBuffer;
+                        loadedFiles++;
+                        updateLoadingProgress();
+                    })
+                    .catch(error => {
+                        console.error(`Failed to load audio: ${soundUrl}`, error);
+                        loadedFiles++;
+                        updateLoadingProgress();
+                    });
+            });
+        }
+
+        // 更新加载进度
+        function updateLoadingProgress() {
+            const progress = (loadedFiles / totalFiles) * 100;
+            const progressBar = document.getElementById('loading-progress');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+
+            // 计算预计剩余时间
+            const elapsedTime = (Date.now() - startTime) / 1000; // 已用时间（秒）
+            const remainingFiles = totalFiles - loadedFiles;
+            const estimatedTime = (elapsedTime / loadedFiles) * remainingFiles;
+
+            const loadingTime = document.getElementById('loading-time');
+            if (loadingTime) {
+                loadingTime.textContent = `预计剩余时间: ${estimatedTime.toFixed(1)}秒`;
+            }
+
+            // 加载完成后隐藏进度条和文字，并显示功能区域
+            if (loadedFiles >= totalFiles) {
+                hideLoadingBar();
+                showControls();
+                
+            }
+        }
+
+        // 隐藏加载进度条和文字
+        function hideLoadingBar() {
+            const loadingBar = document.querySelector('.loading-bar');
+            const loadingText = document.getElementById('loading-text');
+            const loadingTime = document.getElementById('loading-time');
+            if (loadingBar && loadingText && loadingTime) {
+                loadingBar.style.display = 'none';
+                loadingText.style.display = 'none';
+                loadingTime.style.display = 'none';
+            }
+        }
+
+        // 显示功能区域
+        function showControls() {
+            const controls = document.querySelectorAll('.ctrl');
+            controls.forEach(control => {
+                control.style.display = 'block';
+            });
+        }
+
+        // 页面加载完成后开始预加载
+        window.addEventListener('load', () => {
+            preloadAudio();
+        });
+
+        // 播放音频
+        function playAudio(source) {
+            source.start();
+            if (loopEnabled) {
+                source.loop = true;
+            } else {
+                source.loop = false;
+            }
+        }
+
+        // 自动播放下一首
+        function playNext() {
+            if (!autoPlayEnabled) return;
+
+            const audioElements = document.querySelectorAll('ul li');
+            if (autoPlayIndex >= audioElements.length) {
+                autoPlayIndex = 0; // 循环播放
+            }
+
+            const soundUrl = audioElements[autoPlayIndex].getAttribute('m');
+            const audioBuffer = audioBuffers[soundUrl];
+
+            if (audioBuffer) {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+
+                audioList.forEach(source => source.stop());
+                audioList = [source];
+
+                currentAudio = source;
+
+                source.onended = () => {
+                    autoPlayIndex++;
+                    playNext();
+                };
+
+                if (delayTime > 0) {
+                    setTimeout(() => {
+                        playAudio(source);
+                    }, delayTime);
+                } else {
+                    playAudio(source);
+                }
+            }
+        }
+
+        // 绑定点击事件
+        document.querySelectorAll('ul li').forEach(item => {
+            item.addEventListener('click', () => {
+                const soundUrl = item.getAttribute('m');
+                const audioBuffer = audioBuffers[soundUrl];
+
+                if (audioBuffer) {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+
+                    audioList.forEach(source => source.stop());
+                    audioList = [source];
+
+                    currentAudio = source;
+
+                    if (delayTime > 0) {
+                        setTimeout(() => {
+                            playAudio(source);
+                        }, delayTime);
+                    } else {
+                        playAudio(source);
+                    }
+                }
+            });
+        });
+
+        // 暂停所有音频
+        function pauseAll() {
+            audioList.forEach(source => source.stop());
+            audioList = [];
+            autoPlayEnabled = false;
+                        loopEnabled = false;
+                        delayTime = 0;
+            currentAudio = null;
+            showToast('已停止所有音效/音乐');
+        }
+
+        // 设置延迟播放
+        function setDelay() {
+            delayTime = prompt('请输入延迟时间（毫秒）：');
+            if (delayTime !== null && !isNaN(delayTime)) {
+                delayTime = parseInt(delayTime);
+                showToast(`已设置延迟播放：${delayTime}毫秒`);
+            } else {
+                showToast('请输入有效的数字');
+            }
+        }
+
+        // 取消延迟播放
+        function cancelDelay() {
+            delayTime = 0;
+            showToast('已取消延迟播放');
+        }
+
+        // 设置自动播放
+        function setAutoPlay() {
+            autoPlayEnabled = true;
+            autoPlayIndex = 0; // 重置索引
+           
+            playNext();
+            showToast('已启用自动播放');
+        }
+
+        // 取消自动播放
+        function cancelAutoPlay() {
+            autoPlayEnabled = false;
+            showToast('已取消自动播放');
+        }
+
+        // 设置单击循环
+        function setLoop() {
+            loopEnabled = true;
+         
+            showToast('已启用单击循环');
+        }
+
+        // 取消单击循环
+        function cancelLoop() {
+            loopEnabled = false;
+            showToast('已取消单击循环');
+        }
+
+        // 显示Toast提示
+        function showToast(message) {
+            iapp.fn('js.showToast("'+message+'")');
+        }
+
+        // 折叠栏功能
+        function toggleAccordion(header) {
+            const item = header.parentElement;
+            const content = item.querySelector('.accordion-content');
+            const icon = header.querySelector('i');
+
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.classList.remove('active');
+            } else {
+                content.classList.add('open');
+                icon.classList.add('active');
+            }
+        }
+
+        // 图片放大功能
+        function openModal(img) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'flex';
+            modalImg.src = img.src;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        // 滚动到顶部
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

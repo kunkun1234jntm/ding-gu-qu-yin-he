@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>✨ 马年头像框DIY工具箱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', WeChat Sans, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            padding: 15px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .title {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 600;
+            padding: 10px 0;
+            letter-spacing: 0.5px;
+        }
+        .tool-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s ease;
+        }
+        .tool-box:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .preview-box .preview-title {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-box .preview-title::before {
+            content: "";
+            width: 4px;
+            height: 18px;
+            background-color: #21d399;
+            border-radius: 2px;
+        }
+        /* 缩小预览容器尺寸 */
+        .avatar-container {
+            width: 180px;
+            height: 180px;
+            border-radius: 8px;
+            border: 3px solid #f0f2f5;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto 25px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .avatar-container:hover {
+            border-color: #e8f0fe;
+            box-shadow: 0 0 12px rgba(33, 211, 153, 0.1);
+        }
+        #origin-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: center; /* 设置变换原点为中心 */
+            transition: transform 0.2s ease;
+        }
+        #frame-overlay {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10;
+            object-fit: contain; 
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        /* 统一按钮样式：颜色#21d399 + 文字居中 */
+        .upload-btn, #download-btn, .scale-btn, .move-btn {
+            padding: 11px 36px;
+            background: #21d399;
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 80%;
+            outline: none;
+            text-align: center;
+        }
+        .upload-btn:hover, #download-btn:hover:not(:disabled), .scale-btn:hover:not(:disabled), .move-btn:hover:not(:disabled) {
+            background: #1bb886;
+        }
+        #download-btn:disabled, .scale-btn:disabled, .move-btn:disabled {
+            background: #e8f5e9;
+            color: #a5d6a7;
+            cursor: not-allowed;
+        }
+        #download-btn:active:not(:disabled), .scale-btn:active:not(:disabled), .move-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        #upload-input {
+            display: none;
+        }
+        
+        /* 折叠栏样式 */
+        .collapse-container {
+            width: 80%;
+            margin: 0 auto 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: none; /* 初始隐藏 */
+        }
+        .collapse-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: #edf2f7;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .collapse-header:hover {
+            background: #e2e8f0;
+        }
+        .collapse-header h3 {
+            font-size: 15px;
+            color: #4a5568;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .collapse-header h3::before {
+            content: "⚙️";
+            font-size: 14px;
+        }
+        .collapse-icon {
+            font-size: 18px;
+            color: #718096;
+            transition: transform 0.3s ease;
+        }
+        .collapse-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+        .collapse-content.open {
+            padding: 20px;
+            max-height: 500px;
+        }
+        
+        /* 缩放按钮组样式 */
+        .scale-btn-group, .move-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .scale-btn, .move-btn {
+            width: 50%;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        /* 移动按钮网格布局 */
+        .move-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .move-grid .move-btn {
+            width: 100%;
+            padding: 10px 0;
+            font-size: 13px;
+            border-radius: 8px;
+        }
+        /* 中间的上移按钮 */
+        .move-up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        /* 中间的下移按钮 */
+        .move-down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        /* 左移按钮 */
+        .move-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        /* 右移按钮 */
+        .move-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        /* 中间的复位按钮 */
+        .move-reset {
+            grid-column: 2;
+            grid-row: 2;
+            font-size: 12px;
+            background-color: #ff9800;
+        }
+        .move-reset:hover:not(:disabled) {
+            background-color: #f57c00;
+        }
+        
+        .frame-box .frame-title {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .frame-box .frame-title::before {
+            content: "";
+            width: 4px;
+            height: 18px;
+            background-color: #fbbc05;
+            border-radius: 2px;
+        }
+        .frame-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            padding: 5px 0;
+        }
+        .frame-item {
+            width: 72px;
+            height: 72px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f8f9fa;
+        }
+        .frame-item.active {
+            border-color: #21d399;
+            box-shadow: 0 0 0 2px rgba(33, 211, 153, 0.2);
+        }
+        .frame-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .tips {
+            text-align: center;
+            margin-top: 15px;
+            color: #718096;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .year-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fbbc05;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            z-index: 15;
+        }
+        
+        #graph {
+            display: none; 
+        }
+
+        @media (max-width: 768px) {
+            .avatar-container {
+                width: 150px;
+                height: 150px;
+            }
+            .upload-btn, #download-btn, .scale-btn, .move-btn {
+                width: 90%;
+            }
+            .collapse-container {
+                width: 90%;
+            }
+            .move-grid .move-btn {
+                padding: 8px 0;
+                font-size: 12px;
+            }
+            .frame-item {
+                width: 68px;
+                height: 68px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+ 
+        <div class="tool-box preview-box">
+            <div class="avatar-container">
+                <img id="origin-avatar" src="1767937404182.webp" alt="请上传头像">
+                <img id="frame-overlay" src="" alt="头像框">
+            </div>
+            <div class="btn-group">
+                <label for="upload-input" class="upload-btn">选择头像</label>
+                <input type="file" id="upload-input" accept="image/jpg,image/png,image/jpeg,image/gif,image/webp">
+                <button id="download-btn" disabled style="display: none;">保存图片</button>
+            </div>
+            
+            <!-- 折叠栏容器（初始隐藏） -->
+            <div class="collapse-container" id="collapse-container">
+                <div class="collapse-header" id="collapse-header">
+                    <h3>头像调整工具</h3>
+                    <span class="collapse-icon" id="collapse-icon">▼</span>
+                </div>
+                <div class="collapse-content" id="collapse-content">
+                    <!-- 缩放按钮组 -->
+                    <div class="scale-btn-group">
+                        <button class="scale-btn" id="scale-up" disabled>放大头像</button>
+                        <button class="scale-btn" id="scale-down" disabled>缩小头像</button>
+                    </div>
+                    <!-- 移动按钮网格 -->
+                    <div class="move-grid">
+                        <button class="move-btn move-up" id="move-up" disabled>上移</button>
+                        <button class="move-btn move-left" id="move-left" disabled>左移</button>
+                        <button class="move-btn move-reset" id="move-reset" disabled>复位</button>
+                        <button class="move-btn move-right" id="move-right" disabled>右移</button>
+                        <button class="move-btn move-down" id="move-down" disabled>下移</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-box frame-box">
+            <div class="frame-list">
+                <div class="frame-item active" data-frame="hat1.png">
+                    <img src="hat1.png" alt="气泡框1">
+                </div>
+                <div class="frame-item" data-frame="hat2.png">
+                    <img src="hat2.png" alt="马年吉祥气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat3.png">
+                    <img src="hat3.png" alt="马到成功气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat4.png">
+                    <img src="hat4.png" alt="新春马年气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat5.png">
+                    <img src="hat5.png" alt="福马迎春气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat6.png">
+                    <img src="hat6.png" alt="骏马送福气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat7.png">
+                    <img src="hat7.png" alt="马年喜乐气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat8.png">
+                    <img src="hat8.png" alt="国庆气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat9.png">
+                    <img src="hat9.png" alt="中秋气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat10.png">
+                    <img src="hat10.png" alt="中秋气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat11.png">
+                    <img src="hat11.png" alt="中秋气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat12.png">
+                    <img src="hat12.png" alt="中秋气泡框">
+                </div>
+                <div class="frame-item" data-frame="hat13.png">
+                    <img src="hat13.png" alt="气泡框13">
+                </div>
+                <div class="frame-item" data-frame="hat14.png">
+                    <img src="hat14.png" alt="气泡框14">
+                </div>
+                <div class="frame-item" data-frame="hat15.png">
+                    <img src="hat15.png" alt="气泡框15">
+                </div>
+                <div class="frame-item" data-frame="hat16.png">
+                    <img src="hat16.png" alt="气泡框16">
+                </div>
+                <div class="frame-item" data-frame="hat17.png">
+                    <img src="hat17.png" alt="气泡框17">
+                </div>
+                <div class="frame-item" data-frame="hat18.png">
+                    <img src="hat18.png" alt="气泡框18">
+                </div>
+                <div class="frame-item" data-frame="hat19.png">
+                    <img src="hat19.png" alt="气泡框19">
+                </div>
+                <div class="frame-item" data-frame="hat20.png">
+                    <img src="hat20.png" alt="气泡框20">
+                </div>
+                <div class="frame-item" data-frame="hat21.png">
+                    <img src="hat21.png" alt="气泡框21">
+                </div>
+                <div class="frame-item" data-frame="hat22.png">
+                    <img src="hat22.png" alt="气泡框22">
+                </div>
+                <div class="frame-item" data-frame="hat23.png">
+                    <img src="hat23.png" alt="气泡框23">
+                </div>
+                <div class="frame-item" data-frame="hat24.png">
+                    <img src="hat24.png" alt="气泡框24">
+                                  </div>
+                <div class="frame-item" data-frame="hat25.png">
+                    <img src="hat25.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat26.png">
+                    <img src="hat26.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat27.png">
+                    <img src="hat27.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat28.png">
+                    <img src="hat28.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat29.png">
+                    <img src="hat29.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat30.png">
+                    <img src="hat30.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat31.png">
+                    <img src="hat31.png" alt="气泡框24">
+                </div>
+                <div class="frame-item" data-frame="hat32.png">
+                    <img src="hat32.png" alt="气泡框24">
+  
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+          
+    <div id="graph"></div>
+
+    <script>
+        const uploadInput = document.getElementById('upload-input');
+        const originAvatar = document.getElementById('origin-avatar');
+        const frameOverlay = document.getElementById('frame-overlay');
+        const frameItems = document.querySelectorAll('.frame-item');
+        const downloadBtn = document.getElementById('download-btn');
+        const scaleUpBtn = document.getElementById('scale-up');
+        const scaleDownBtn = document.getElementById('scale-down');
+        const moveUpBtn = document.getElementById('move-up');
+        const moveDownBtn = document.getElementById('move-down');
+        const moveLeftBtn = document.getElementById('move-left');
+        const moveRightBtn = document.getElementById('move-right');
+        const moveResetBtn = document.getElementById('move-reset');
+        const collapseHeader = document.getElementById('collapse-header');
+        const collapseIcon = document.getElementById('collapse-icon');
+        const collapseContent = document.getElementById('collapse-content');
+        const collapseContainer = document.getElementById('collapse-container');
+        const graphDiv = document.getElementById('graph');
+
+        let currentFrame = frameItems[0].dataset.frame;
+        let avatarScale = 1; // 缩放比例
+        let avatarX = 0; // 水平位置偏移
+        let avatarY = 0; // 垂直位置偏移
+        const scaleStep = 0.1; // 每次缩放步长
+        const moveStep = 5; // 每次移动步长（像素）
+        const minScale = 0.5; // 最小缩放比例
+        const maxScale = 2.0; // 最大缩放比例
+        const maxMove = 30; // 最大移动距离
+        
+        // 折叠栏状态
+        let isCollapsed = true;
+        
+        // 初始化头像框
+        frameOverlay.src = currentFrame;
+        
+        // 更新头像变换
+        function updateAvatarTransform() {
+            originAvatar.style.transform = `scale(${avatarScale}) translate(${avatarX}px, ${avatarY}px)`;
+        }
+        
+        // 控制按钮显示/隐藏状态
+        function updateButtonStates() {
+            const hasImage = originAvatar.src && originAvatar.src.length > 0;
+            
+            if (hasImage) {
+                // 有图片：启用所有按钮并显示保存按钮和折叠栏
+                downloadBtn.disabled = false;
+                downloadBtn.style.display = 'block'; // 显示保存按钮
+                scaleUpBtn.disabled = false;
+                scaleDownBtn.disabled = false;
+                moveUpBtn.disabled = false;
+                moveDownBtn.disabled = false;
+                moveLeftBtn.disabled = false;
+                moveRightBtn.disabled = false;
+                moveResetBtn.disabled = false;
+                // 显示折叠栏
+                collapseContainer.style.display = 'block';
+                // 自动展开折叠栏
+                if (isCollapsed) {
+                    toggleCollapse();
+                }
+            } else {
+                // 无图片：禁用所有按钮并隐藏保存按钮和折叠栏
+                downloadBtn.disabled = true;
+                downloadBtn.style.display = 'none'; // 隐藏保存按钮
+                scaleUpBtn.disabled = true;
+                scaleDownBtn.disabled = true;
+                moveUpBtn.disabled = true;
+                moveDownBtn.disabled = true;
+                moveLeftBtn.disabled = true;
+                moveRightBtn.disabled = true;
+                moveResetBtn.disabled = true;
+                // 隐藏折叠栏
+                collapseContainer.style.display = 'none';
+            }
+        }
+
+        // 初始状态：无图片，按钮隐藏
+        updateButtonStates();
+        
+        // 折叠栏切换函数
+        function toggleCollapse() {
+            if (isCollapsed) {
+                // 展开
+                collapseContent.classList.add('open');
+                collapseIcon.textContent = '▲';
+                isCollapsed = false;
+            } else {
+                // 折叠
+                collapseContent.classList.remove('open');
+                collapseIcon.textContent = '▼';
+                isCollapsed = true;
+            }
+        }
+        
+        // 折叠栏点击事件
+        collapseHeader.addEventListener('click', toggleCollapse);
+
+        // --- 头像框选择逻辑 ---
+        frameItems.forEach(item => {
+            item.addEventListener('click', () => {
+                frameItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                currentFrame = item.dataset.frame;
+                frameOverlay.style.opacity = 0;
+                setTimeout(() => {
+                    frameOverlay.src = currentFrame;
+                    frameOverlay.style.opacity = 1;
+                }, 100);
+                // 更新按钮状态（如果已上传图片则启用）
+                updateButtonStates();
+            });
+        });
+
+        // --- 上传逻辑（仅限图片格式）---
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            // 二次校验文件类型，防止绕过accept限制
+            const validTypes = ['image/jpg', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('请选择有效的图片格式！');
+                uploadInput.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                originAvatar.style.opacity = 0;
+                setTimeout(() => {
+                    originAvatar.src = event.target.result;
+                    // 重置缩放和位置
+                    avatarScale = 1;
+                    avatarX = 0;
+                    avatarY = 0;
+                    updateAvatarTransform();
+                    originAvatar.style.opacity = 1;
+                }, 100);
+                // 更新按钮状态
+                updateButtonStates();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // --- 按钮缩放逻辑 ---
+        scaleUpBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            if (avatarScale >= maxScale) return;
+            avatarScale += scaleStep;
+            updateAvatarTransform();
+        });
+
+        scaleDownBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            if (avatarScale <= minScale) return;
+            avatarScale -= scaleStep;
+            updateAvatarTransform();
+        });
+
+        // --- 按钮移动逻辑 ---
+        moveUpBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            if (avatarY <= -maxMove) return;
+            avatarY -= moveStep;
+            updateAvatarTransform();
+        });
+
+        moveDownBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            if (avatarY >= maxMove) return;
+            avatarY += moveStep;
+            updateAvatarTransform();
+        });
+
+        moveLeftBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            if (avatarX <= -maxMove) return;
+            avatarX -= moveStep;
+            updateAvatarTransform();
+        });
+
+        moveRightBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            if (avatarX >= maxMove) return;
+            avatarX += moveStep;
+            updateAvatarTransform();
+        });
+
+        // --- 复位按钮逻辑 ---
+        moveResetBtn.addEventListener('click', () => {
+            if (!originAvatar.src) return;
+            avatarX = 0;
+            avatarY = 0;
+            avatarScale = 1;
+            updateAvatarTransform();
+        });
+
+        // --- 核心下载逻辑（修复画质问题）---
+        function dataURItoBlob(dataURI) {
+            var binStr = atob(dataURI.split(',')[1]);
+            var len = binStr.length;
+            var arr = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                arr[i] = binStr.charCodeAt(i);
+            }
+            return new Blob([arr], { type: 'image/png' });
+        }
+
+        function generateFileName() {
+            var d = new Date();
+            var pad = function(n) {
+                return n < 10 ? '0' + n : n;
+            };
+            return '马年头像_' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '.png';
+        }
+
+        downloadBtn.addEventListener('click', function() {
+            if (!originAvatar.src || !frameOverlay.src) return;
+
+            downloadBtn.innerText = "正在保存...";
+            downloadBtn.disabled = true;
+
+            // 创建高分辨率画布（1024x1024，保持高清画质）
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            
+            // 设置高分辨率画布尺寸（1024x1024）
+            canvas.width = 1024;
+            canvas.height = 1024;
+            
+            // 开启图像平滑处理以获得更好的质量
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // 计算预览容器与画布的比例
+            var previewWidth = 180; // 预览容器宽度
+            var previewHeight = 180; // 预览容器高度
+            var scaleRatio = canvas.width / previewWidth; // 1024/180 ≈ 5.688
+
+            var avatarImg = new Image();
+            avatarImg.crossOrigin = "anonymous";
+            avatarImg.onload = function() {
+                // 计算头像在预览容器中的位置和尺寸（模拟object-fit: cover）
+                var imgWidth = avatarImg.width;
+                var imgHeight = avatarImg.height;
+                
+                // 计算预览容器中的cover模式尺寸
+                var coverScale = Math.max(previewWidth / imgWidth, previewHeight / imgHeight);
+                var coverWidth = imgWidth * coverScale;
+                var coverHeight = imgHeight * coverScale;
+                
+                // 计算预览容器中的cover模式位置
+                var coverX = (previewWidth - coverWidth) / 2;
+                var coverY = (previewHeight - coverHeight) / 2;
+                
+                // 应用用户缩放
+                var scaledWidth = coverWidth * avatarScale;
+                var scaledHeight = coverHeight * avatarScale;
+                
+                // 应用用户移动（并保持中心缩放）
+                var x = coverX + avatarX - (scaledWidth - coverWidth) / 2;
+                var y = coverY + avatarY - (scaledHeight - coverHeight) / 2;
+                
+                // 将预览容器中的位置和尺寸映射到高分辨率画布上
+                var canvasX = x * scaleRatio;
+                var canvasY = y * scaleRatio;
+                var canvasWidth = scaledWidth * scaleRatio;
+                var canvasHeight = scaledHeight * scaleRatio;
+                
+                // 在高分辨率画布上绘制头像
+                ctx.drawImage(avatarImg, canvasX, canvasY, canvasWidth, canvasHeight);
+
+                var frameImg = new Image();
+                frameImg.crossOrigin = "anonymous";
+                frameImg.onload = function() {
+                    // 在高分辨率画布上绘制头像框
+                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                    
+                    // 获取高质量PNG图像数据（不压缩）
+                    var imageData = canvas.toDataURL('image/png', 1.0); // 最高质量
+                    var blob = dataURItoBlob(imageData);
+                    var link = document.createElement('a');
+                    link.download = generateFileName();
+                    link.href = URL.createObjectURL(blob);
+                    
+                    graphDiv.appendChild(link);
+                    setTimeout(function() {
+                        link.click();
+                        graphDiv.removeChild(link);
+                        downloadBtn.innerText = "保存图片";
+                        downloadBtn.disabled = false;
+                    }, 100);
+                };
+                frameImg.src = frameOverlay.src;
+            };
+            avatarImg.src = originAvatar.src;
+        });
+    </script>
+</body>
+</html>

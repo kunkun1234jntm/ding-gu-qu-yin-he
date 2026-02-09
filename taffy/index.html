@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关注塔菲谢谢喵</title>
+    <meta name="description" content="这是一款有趣的手速连点游戏，测试你的手速，看看你能关注塔菲多少次！" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ffcfe5 0%, #ffb6d9 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(255, 100, 180, 0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #ff7eb3, #ff65a3);
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 i {
+            margin-right: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            padding: 30px;
+        }
+        
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            text-align: center;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        #startScreen {
+            padding: 20px;
+        }
+        
+        .timer-input {
+            margin: 30px 0;
+        }
+        
+        .timer-input label {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 15px;
+            color: #ff65a3;
+            font-weight: bold;
+        }
+        
+        .timer-input input {
+            width: 200px;
+            padding: 15px;
+            font-size: 1.8rem;
+            text-align: center;
+            border: 3px solid #ff7eb3;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .timer-input input:focus {
+            border-color: #ff2d87;
+            box-shadow: 0 0 10px rgba(255, 45, 135, 0.3);
+        }
+        
+        .button {
+            background: linear-gradient(to right, #ff7eb3, #ff65a3);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.4rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 100, 180, 0.4);
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 100, 180, 0.5);
+        }
+        
+        .button:active {
+            transform: translateY(1px);
+        }
+        
+        #gameScreen {
+            position: relative;
+        }
+        
+        .profile {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px;
+            border: 5px solid #ff7eb3;
+        }
+        
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .username {
+            font-size: 2rem;
+            color: #ff65a3;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .follow-count {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            color: #666;
+        }
+        
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #ff2d87;
+            margin: 20px 0;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .follow-button {
+            background: linear-gradient(to right, #ff4d94, #ff2d87);
+            color: white;
+            border: none;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 10px 25px rgba(255, 45, 135, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .follow-button:hover {
+            background: linear-gradient(to right, #ff3d8c, #ff1d7f);
+        }
+        
+        .follow-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(255, 45, 135, 0.4);
+        }
+        
+        .music-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        .music-control i {
+            font-size: 1.5rem;
+            color: #ff65a3;
+        }
+        
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .result-modal.active {
+            display: flex;
+        }
+        
+        .result-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.4s ease;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-title {
+            font-size: 2.2rem;
+            color: #ff65a3;
+            margin-bottom: 20px;
+        }
+        
+        .result-stats {
+            font-size: 1.8rem;
+            margin: 25px 0;
+            line-height: 1.5;
+        }
+        
+        .record-badge {
+            background-color: #ffeb3b;
+            color: #333;
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(255, 193, 7, 0.4);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .timer-display {
+                font-size: 2.5rem;
+            }
+            
+            .follow-button {
+                width: 180px;
+                height: 180px;
+                font-size: 1.8rem;
+            }
+            
+            .result-title {
+                font-size: 1.8rem;
+            }
+            
+            .result-stats {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-paw"></i>关注塔菲谢谢喵</h1>
+            <p>测试你的手速，看看你能关注塔菲多少次！</p>
+        </div>
+        
+        <div class="game-area">
+            <!-- 开始界面 -->
+            <div id="startScreen" class="screen active">
+                <h2>游戏设置</h2>
+                <div class="timer-input">
+                    <label for="timerInput">设置倒计时时间（秒）</label>
+                    <input type="number" id="timerInput" min="5" max="300" value="30">
+                </div>
+                <p>设置完成后点击开始游戏，然后快速点击关注按钮！</p>
+                <button id="startButton" class="button">开始游戏 <i class="fas fa-play"></i></button>
+            </div>
+            
+            <!-- 游戏界面 -->
+            <div id="gameScreen" class="screen">
+                <div class="music-control" id="musicToggle">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                
+                <div class="profile">
+                    <div class="avatar">
+                        <!-- 这里使用占位图，实际使用应替换为yctf.jpg -->
+                        <img src="./yctf.jpg" alt="永雏塔菲头像" id="avatarImg">
+                    </div>
+                    <div class="username">永雏塔菲</div>
+                    <div class="follow-count">关注次数: <span id="followCount">0</span></div>
+                </div>
+                
+                <div class="timer-display" id="timerDisplay">30</div>
+                
+                <button class="follow-button" id="followButton">
+                    <i class="fas fa-heart"></i>
+                    <span style="font-size: 1.2rem; margin-top: 10px;">关注</span>
+                </button>
+                
+                <p>快速点击关注按钮，看看你能在倒计时结束前关注多少次！</p>
+            </div>
+        </div>
+        
+        <!-- 结果弹窗 -->
+        <div class="result-modal" id="resultModal">
+            <div class="result-content">
+                <div class="result-title" id="resultTitle">太弱了喵！</div>
+                <div class="result-stats" id="resultStats">你在30秒内关注了0次塔菲喵！</div>
+                <div id="recordBadge" class="record-badge" style="display: none;">新纪录喵！</div>
+                <button id="restartButton" class="button">再来一局 <i class="fas fa-redo"></i></button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>游戏作者：@马里奥顶蘑菇Mario</p>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态变量
+        let gameTime = 30; // 默认游戏时间
+        let count = 0; // 关注次数
+        let timer = null; // 定时器
+        let timeLeft = 0; // 剩余时间
+        let isPlaying = false; // 游戏是否进行中
+        let musicPlaying = true; // 音乐是否播放中
+        let record = 0; // 最高记录
+        let currentRecord = 0; // 当前记录
+        
+        // DOM元素
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const resultModal = document.getElementById('resultModal');
+        const timerInput = document.getElementById('timerInput');
+        const startButton = document.getElementById('startButton');
+        const followButton = document.getElementById('followButton');
+        const followCount = document.getElementById('followCount');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultStats = document.getElementById('resultStats');
+        const recordBadge = document.getElementById('recordBadge');
+        const restartButton = document.getElementById('restartButton');
+        const musicToggle = document.getElementById('musicToggle');
+        const avatarImg = document.getElementById('avatarImg');
+        
+        // 音频元素
+        const bgMusic = new Audio();
+        // 注意：这里使用一个示例音乐链接，实际应使用你的gztfxxm.mp3文件
+        bgMusic.src = './gztfxxm.mp3';
+        bgMusic.loop = true;
+        bgMusic.volume = 0.7;
+        
+        // 开始游戏
+        startButton.addEventListener('click', startGame);
+        
+        // 点击关注按钮
+        followButton.addEventListener('click', () => {
+            if (!isPlaying) return;
+            
+            count++;
+            followCount.textContent = count;
+            
+            // 添加点击动画效果
+            followButton.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                followButton.style.transform = 'scale(1)';
+            }, 100);
+        });
+        
+        // 重新开始游戏
+        restartButton.addEventListener('click', restartGame);
+        
+        // 音乐控制
+        musicToggle.addEventListener('click', toggleMusic);
+        
+        // 设置头像 - 实际使用中应替换为./yctf.jpg
+        // avatarImg.src = "./yctf.jpg";
+        
+        // 开始游戏函数
+        function startGame() {
+            // 获取设置的时间
+            const inputTime = parseInt(timerInput.value);
+            
+            // 验证输入时间
+            if (isNaN(inputTime) || inputTime < 5 || inputTime > 300) {
+                alert("请输入5到300秒之间的时间！");
+                return;
+            }
+            
+            gameTime = inputTime;
+            timeLeft = gameTime;
+            count = 0;
+            
+            // 更新显示
+            followCount.textContent = count;
+            timerDisplay.textContent = timeLeft;
+            
+            // 切换界面
+            startScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            resultModal.classList.remove('active');
+            
+            // 开始背景音乐
+            if (musicPlaying) {
+                bgMusic.play().catch(e => {
+                    console.log("音频播放失败，用户可能需要与页面交互:", e);
+                });
+            }
+            
+            // 开始倒计时
+            isPlaying = true;
+            timer = setInterval(updateTimer, 1000);
+        }
+        
+        // 更新倒计时
+        function updateTimer() {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+            
+            // 时间少于10秒时改变颜色
+            if (timeLeft <= 10) {
+                timerDisplay.style.color = '#ff2d55';
+            }
+        }
+        
+        // 结束游戏
+        function endGame() {
+            clearInterval(timer);
+            isPlaying = false;
+            
+            // 停止音乐
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            
+            // 更新记录
+            let isNewRecord = false;
+            if (count > record) {
+                record = count;
+                isNewRecord = true;
+            }
+            
+            // 设置结果标题
+            let title = "";
+            if (count < 15) {
+                title = "太弱了喵！";
+            } else if (count >= 15 && count < 60) {
+                title = "再接再厉喵！";
+            } else if (count >= 60 && count < 100) {
+                title = "加油喵！";
+            } else if (count >= 100 && count < 200) {
+                title = "太强了喵！";
+            } else if (count >= 200) {
+                title = "这么厉害喵？";
+            }
+            
+            // 显示结果
+            resultTitle.textContent = title;
+            resultStats.textContent = `你在${gameTime}秒内关注了${count}次塔菲喵！`;
+            
+            // 显示新纪录
+            if (isNewRecord) {
+                recordBadge.style.display = "block";
+            } else {
+                recordBadge.style.display = "none";
+            }
+            
+            // 显示结果弹窗
+            resultModal.classList.add('active');
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            // 切换界面
+            gameScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            resultModal.classList.remove('active');
+            
+            // 停止音乐
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+        
+        // 切换音乐
+        function toggleMusic() {
+            musicPlaying = !musicPlaying;
+            const icon = musicToggle.querySelector('i');
+            
+            if (musicPlaying) {
+                icon.className = 'fas fa-volume-up';
+                if (isPlaying) {
+                    bgMusic.play().catch(e => {
+                        console.log("音频播放失败:", e);
+                    });
+                }
+            } else {
+                icon.className = 'fas fa-volume-mute';
+                bgMusic.pause();
+            }
+        }
+        
+        // 初始化 - 设置默认值
+        timerInput.value = gameTime;
+        timerDisplay.textContent = gameTime;
+        
+        // 添加页面加载完成后的提示
+        window.addEventListener('load', () => {
+            console.log("游戏加载完成！关注塔菲谢谢喵！");
+            console.log("注意：实际使用中请替换头像和背景音乐文件路径");
+        });
+    </script>
+</body>
+</html>

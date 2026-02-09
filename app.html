@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="background-color: #ffffff;">
+
+<head>
+
+<script async src=""
+     crossorigin="anonymous"></script>
+
+    <meta charset="UTF-8">
+    <title>APP</title>
+    <meta name="description" content="APP" />
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,viewport-fit=cover" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="referrer" content="no-referrer" />
+    <script src="https://dinggubox-hh1g40cu.maozi.io/js/vue.global.prod.min.js"></script>
+    <script src="https://dinggubox-hh1g40cu.maozi.io/js/vant.min.js"></script>
+    <link href="https://dinggubox-hh1g40cu.maozi.io/css/index.app.css" type="text/css" rel="stylesheet" />
+    <style>
+        /* 基础样式 */
+        .block__title {
+            margin: 0;
+            padding: 16px 16px 16px;
+            color: #969799;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 16px;
+        }
+
+        .my-swipe .van-swipe-item {
+            color: #fff;
+            font-size: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        /* 底部导航栏优化 */
+        .van-tabbar {
+            height: 50px;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .van-tabbar-item__icon {
+            font-size: 20px;
+        }
+
+        /* 内容区域间距 */
+        .van-tabs {
+            margin-bottom: 50px;
+        }
+
+        /* 返回顶部按钮美化 */
+        .back-to-top {
+            position: fixed;
+            bottom: 70px;
+            right: 12px;
+            z-index: 999;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .back-to-top:hover {
+            transform: scale(1.1);
+        }
+
+        /* 发现页面优化 */
+        .discover-container {
+            position: fixed;
+            top: 0px; /* 主页面导航栏高度 */
+            bottom: 50px; /* 底部导航栏高度 */
+            left: 0;
+            right: 0;
+            overflow: hidden;
+        }
+
+        /* 适配移动端安全区域 */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .discover-container {
+                bottom: calc(50px + env(safe-area-inset-bottom));
+            }
+        }
+
+        .discover-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            overflow: auto; /* 允许内部滚动 */
+        }
+    </style>
+</head>
+
+<body style="min-width: 320px;margin: 0 auto;">
+    <div id="app">
+        <!-- 首页内容 -->
+        <div v-if="tabbar === 0">
+
+            <van-tabs v-model:active="active" swipeable>
+                <van-tab v-for="tab in WebsiteSort" :title="tab.title" :key="tab.id" style="background: white;">
+                    <van-row>
+                        <van-col span="12" v-for="item in filteredWebsiteItem" v-show="tab.id == item.sortId" center>
+                            <van-cell :title="item.title" :label="item.description" center :border="false" is-link
+                                :color="item.color" @click="uigo(item)">
+                                <van-image :src="item.icon" round width="2.5rem" height="2.5rem"></van-image>
+                            </van-cell>
+                        </van-col>
+                    </van-row>
+                </van-tab>
+            </van-tabs>
+
+        
+        </div>
+
+        <!-- 发现页面 -->
+     
+
+        <!-- 分享弹窗 -->
+        <van-share-sheet v-model:show="showShare" title="立即分享给好友" :options="options" @select="onSelect">
+        </van-share-sheet>
+
+        <!-- 更新弹窗 -->
+        <van-action-sheet v-model:show="show_gx" :actions="actions_gx" cancel-text="取消" title="软件有新版本啦"
+            @select="onSelect_gx" close-on-click-action>
+        </van-action-sheet>
+
+        <!-- 公告弹窗 -->
+        <van-dialog v-model:show="showNotice" title="公告" show-cancel-button @confirm="handleNoticeConfirm"
+            @cancel="handleNoticeCancel">
+            <div style="padding: 16px;">
+                {{ noticeContent }}
+            </div>
+            <van-checkbox v-model="remindLater" style="padding: 0 16px 16px;">
+                不再提醒
+            </van-checkbox>
+        </van-dialog>
+    </div>
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    tabbar: 0,
+                    activeName: 0,
+                    active: 0,
+                    showShare: false,
+                    version_zx: '6.0',
+                    version: this.getQuery('v'),
+                    show_gx: false,
+                    actions_gx: [
+                        { name: '立即更新', subname: '优化下载文件 修复已知问题', color: '#ee0a24' },
+                    ],
+                    options: [
+                        { name: '微信', icon: 'wechat' },
+                        { name: '微博', icon: 'weibo' },
+                        { name: '复制链接', icon: 'link' },
+                        { name: '分享海报', icon: 'poster' },
+                        { name: '二维码', icon: 'qrcode' },
+                    ],
+                    WebsiteSort: [
+                        { id: 1, title: "语音盒" },
+                        { id: 2, title: "演奏器" },
+                        { id: 3, title: "小工具" },
+                        { id: 4, title: "小游戏" },
+                    ],
+                    WebsiteItem: [
+                                             // 语音盒
+                                                           {
+                        sortId: 1,
+                        title: "小N语音盒",
+                        url: "https://shoureibox.maozi.io/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/xiaonnew.jpg",
+                        bigpic: "https://shoureibox.maozi.io/2.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "感受N典，一起盒盒盒盒",
+                    },
+   
+                                                                                                 {
+                        sortId: 1,
+                        title: "忘崽小乔语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/wzxq/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/wzxq.jpeg",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/wzxq/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "我是忘崽小乔，你们好吗？",
+                    },
+
+{
+                        sortId: 1,
+                        title: "鸟儿摇语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/bird/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/bird.jpg",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/bird/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "魔性鸟儿摇，一起咕咕咕",
+                    },
+   
+                                                                                                 {
+                        sortId: 1,
+                        title: "揽佬语音盒DLC",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/lanlao/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/lanlao/icon2.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/lanlao/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "别墅里面唱K，水池里面银龙鱼~",
+                    },
+
+{
+                        sortId: 1,
+                        title: "奶龙语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/nailong/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/nailong/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/nailong/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "我是奶龙，我才是奶龙！",
+                    },
+   
+                                                                                                 {
+                        sortId: 1,
+                        title: "头牛语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/touniu/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/touniu/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/touniu/1.png",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "你好，我帮你种个...哎呦喂！",
+                    },
+
+{
+                        sortId: 1,
+                        title: "猪妞语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/zhuniu/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/zhuniu/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/zhuniu/1.png",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "停停停，宝子你继续，仙女下凡",
+                    },
+   
+                                                                                                 {
+                        sortId: 1,
+                        title: "僵尸语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/zombie/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/zombie/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/zombie/1.png",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "僵尸无情的侵入了你的房子！",
+                    },
+
+{
+                        sortId: 1,
+                        title: "海兔语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/haitu/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/haitu/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/haitu/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "这只海兔怎么这么会玩梗",
+                    },
+   
+                                                                                                 {
+                        sortId: 1,
+                        title: "天津卫语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/tjw/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/tjw/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/tjw/1.png",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "来到了天津卫，嘛也没学会~",
+                    },
+
+                    {
+                        sortId: 1,
+                        title: "王琳凯语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/wlk/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/wlk/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/wlk/1.png",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "你最近过得还好吗",
+                    },
+                    {
+                        sortId: 1,
+                        title: "老鼠MM语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/laoshu/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/laoshu/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/laoshu/1.png",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "老鼠MM，DJDJ",
+                    },
+                    {
+                        sortId: 1,
+                        title: "我赚钱了语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/wzql/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/wzql/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/wzql/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "我都不知道怎么去花",
+                    },
+
+                    {
+                        sortId: 1,
+                        title: "弹谷子语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/tgz/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/tgz/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/tgz/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "清风上南枝，再弹谷子",
+                    },
+
+                    {
+                        sortId: 1,
+                        title: "三年级耀星语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/snjyx/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/snjyx/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/snjyx/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "那我们三年级又算什么呢",
+                    },
+
+                    {
+                        sortId: 1,
+                        title: "刘晓艳语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/lxy/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/lxy/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/lxy/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "哈吧嘚哪嘛嗨呐吗嘿",
+                    },
+                    {
+                        sortId: 1,
+                        title: "丹尼尔语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/darnell/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/darnell/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/darnell/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "绷不住的低音炮丹尼尔",
+                    },
+                    {
+                        sortId: 1,
+                        title: "陈千语语音盒",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yyh/cqy/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yyh/cqy/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yyh/cqy/1.jpg",
+                        type: "语音盒",
+                        color: "#0171CD",
+                        description: "终末地陈千语，当当当~",
+                    },
+       
+
+                    // 演奏器                    
+                             {
+                        sortId: 2,
+                        title: "囧架架演奏器",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yzq/jiong/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yzq/jiong/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yzq/jiong/1.jpg",
+                        type: "演奏器",
+                        color: "#0171CD",
+                        description: "魔性囧架架，一起演奏吧",
+                    },
+                    {
+                        sortId: 2,
+                        title: "哈尼宝贝演奏器",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/yzq/honey/app.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/yzq/honey/icon.png",
+                        bigpic: "https://dinggubox-hh1g40cu.maozi.io/yzq/honey/1.jpg",
+                        type: "演奏器",
+                        color: "#0171CD",
+                        description: "魔性哈尼宝贝，一起演奏吧",
+                    },
+     
+                    // 小工具
+                    {
+                        sortId: 3,
+                        title: "新年头像制作器",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/xgj/newyear/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/xgj/newyear/icon.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "轻松制作个性化新年头像",
+                    },
+                    {
+                        sortId: 3,
+                        title: "鸟都不鸟你表情",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/xgj/birdemoji/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/xgj/birdemoji/icon.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "热门搞笑表情长按保存图片",
+                    },
+
+                    {
+                        sortId: 3,
+                        title: "支付宝到账语音",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/xgj/zfb/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/xgj/zfb/icon.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "生成到账语音随时随地装X",
+                    },
+                    {
+                        sortId: 3,
+                        title: "AI配音助手",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/xgj/aisc/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/xgj/aisc/icon.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "内置197个配音角色全部免费使用",
+                    },
+                                        {
+                        sortId: 3,
+                        title: "曼波语音生成",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/xgj/mbsc/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/xgj/mbsc/icon.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "最近爆火的曼波配音生成",
+                    },
+
+
+     
+                    {
+                        sortId: 3,
+                        title: "羊了个羊编辑器",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/ylgybjq.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/ylgybjq.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "过不去关卡，那就自己做一个！",
+                    },
+                    {
+                        sortId: 3,
+                        title: "电子木鱼",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/dzmy/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/muyu.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "敲出宁静，敲出祥和",
+                    },
+                    {
+                        sortId: 3,
+                        title: "藏头诗生成器",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/cts.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/j.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "一键生成专属藏头诗",
+                    },
+                    {
+                        sortId: 3,
+                        title: "emoji合成",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/emoji.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/emoji.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "创造独一无二的emoji",
+                    },
+
+                    {
+                        sortId: 3,
+                        title: "毒鸡汤",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/djt/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/djt.png",
+                        type: "小工具",
+                        color: "#0171CD",
+                        description: "超过千句幽默风趣的毒鸡汤",
+                    },
+                  
+
+                  // 小游戏
+     
+                    {
+                        sortId: 4,
+                        title: "蔡徐坤马里奥",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/cxk/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/cxk.jpg",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "鸡你太美版马里奥，魔性闯关",
+                    },
+                    {
+                        sortId: 4,
+                        title: "沃了个鱼",
+                        url: "https://nemo.codemao.cn/w/214859287",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/sy.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "小鲨鱼+羊了个羊的魔性结合",
+                    },
+                    {
+                        sortId: 4,
+                        title: "吒了个吒",
+                        url: "https://nezhasheep.maozi.io/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/nz.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "我命由我不由天！",
+                    },
+                    {
+                        sortId: 4,
+                        title: "超级M+7",
+                        url: "https://www.ccw.site/player/684ea2633b0c7734d18fcd76",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/mjq.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "那一天的马里奥，马里奥起来",
+                    },
+
+                    {
+                        sortId: 4,
+                        title: "超级乔里奥",
+                        url: "https://www.ccw.site/player/68888db2b5a9e90d358eb95b",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/wzxq2.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "WZ小乔要去路上捡几个子儿",
+                    },
+
+                    {
+                        sortId: 4,
+                        title: "超级马里奥杂交版",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/mariohe/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/mariohe.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "PVZ有杂交版，我们马里奥也要有！",
+                    },
+                    {
+                        sortId: 4,
+                        title: "乔了个乔",
+                        url: "https://wzxqylgy-k7fmk0cu.maozi.io/",
+                        icon: "https://pic.anxz.com/d/icon/2025/0820/1755665698_68a55522bbaf8.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "别笑，你试你也刷不了几个子儿",
+                    },
+                    {
+                        sortId: 4,
+                        title: "电子乔鱼",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/dzqy.html",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/icon-dzqy.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "敲WZXQ，积子儿！",
+                    },
+                    {
+                        sortId: 4,
+                        title: "飞了个羊",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/flgy/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/flgy/icon.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "点击操控羊羊飞翔，躲避卡牌障碍物！",
+                    },
+
+                    {
+                        sortId: 4,
+                        title: "真·羊了个羊",
+                        url: "https://sheepgame1-5sqno0cu.maozi.io/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/realsheep.jpg",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "卡牌里面全是羊，羊了个羊了个羊！",
+                    },
+                    {
+                        sortId: 4,
+                        title: "曼了个波",
+                        url: "https://manboylgy-vn7qm0cu.maozi.io/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/manbosheep.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "曼波曼波哈基米，通关争当领头马",
+                    },
+                    {
+                        sortId: 4,
+                        title: "吃掉鸽子神",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/eatgezi/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/eatgezi/static/image/ClickBefore.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "你需要在20秒内吃掉尽可能多的鸽子神",
+                    },
+                    {
+                        sortId: 4,
+                        title: "甲了个鱼",
+                        url: "https://sakaylgy-vtvm70cu.maozi.io/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/pic/jialegeyu.jpg",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "以前很火的萨卡班甲鱼",
+                    },
+                    {
+                        sortId: 4,
+                        title: "超级瓦瓦",
+                        url: "https://wawa.dgqrj.top/",
+                        icon: "https://wawa.dgqrj.top/icon-256.png",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "瓦瓦颗秒版马里奥，魔性闯关",
+                    },
+                    {
+                        sortId: 4,
+                        title: "关注塔菲谢谢喵",
+                        url: "https://dinggubox-hh1g40cu.maozi.io/taffy/",
+                        icon: "https://dinggubox-hh1g40cu.maozi.io/taffy/yctf.jpg",
+                        type: "link",
+                        color: "#0171CD",
+                        description: "看看你能关注塔菲多少次",
+                    },
+                               ],
+                    searchQuery: '',
+                    searchCategory: 0,
+                    categoryOptions: [
+                        { text: '全部', value: 0 },
+                        { text: '语音盒', value: 1 },
+                        { text: '演奏器', value: 2 },
+                        { text: '小工具', value: 3 },
+                        { text: '小游戏', value: 4 },
+                    ],
+                    showNotice: false,
+                    noticeContent: '欢迎使用顶菇趣音盒！请务必阅读使用说明。',
+                    remindLater: false,
+                    showBackTop: false
+                }
+            },
+            computed: {
+                filteredWebsiteItem() {
+                    return this.WebsiteItem.filter(item => {
+                        if (this.searchCategory !== 0 && item.sortId !== this.searchCategory) return false;
+                        if (this.searchQuery && !item.title.includes(this.searchQuery)) return false;
+                        return true;
+                    });
+                }
+            },
+            methods: {
+                uigo(item) {
+                    item.clickCount = (item.clickCount || 0) + 1; // 增加点击计数
+                    if (item.type == 'link') {
+                        //window.open(item.url);
+                        //return;
+                    iapp.s('sss.gnqyurl', item.url);
+                    iapp.fn('js.xyx("加载")');
+                    }
+                    if (item.type == '语音盒') {
+                    iapp.s('sss.yyhicon', item.icon);
+                    iapp.s('sss.yyhbigpic', item.bigpic);
+                    iapp.s('sss.gnqyurl', item.url);
+                    iapp.fn('js.yyh("加载")');
+                    }
+                    if (item.type == '演奏器') {
+                    iapp.s('sss.yzqicon', item.icon);
+                    iapp.s('sss.yzqbigpic', item.bigpic);
+                    iapp.s('sss.gnqyurl', item.url);
+                    iapp.fn('js.yzq("加载")');
+                    }
+                    if (item.type == '小工具') {
+                    iapp.s('sss.gnqyurl', item.url);
+                    iapp.fn('js.xgj("加载")');
+                    }
+                    if (item.type == '下载管理') this.xzgl();
+                    if (item.type == '文件管理') this.wjgl();
+                },
+                xzgl() {
+                    try {
+                        //iapp.hdduigo();
+                        iapp.fn('js.showToast("测试成功")');
+                    } catch (error) {
+                        vant.Toast('测试失败')
+                    }
+                },
+                wjgl() {
+                    try {
+                        iapp.sss('dir', '$学习资料/')
+                        iapp.uigo('apklist.iyu')
+                    } catch (error) {
+                        vant.Toast('请在app打开')
+                    }
+                },
+                no() {
+                    vant.Toast('还没有开发')
+                },
+                getQuery(variable) {
+                    var query = window.location.search.substring(1);
+                    var vars = query.split("&");
+                    for (var i = 0; i < vars.length; i++) {
+                        var pair = vars[i].split("=");
+                        if (pair[0] == variable) { return pair[1]; }
+                    }
+                    return (false);
+                },
+                onSelect(option) {
+                    vant.Toast(option.name);
+                    this.showShare = false;
+                },
+                onSelect_gx(option) {
+                    if (option.name == '立即更新') window.open('https://wwzu.lanzouo.com/igskw34rmgzi');
+                },
+                onSearch() {
+                    // 搜索逻辑已在 computed 中实现
+                },
+                handleNoticeConfirm() {
+                    if (this.remindLater) {
+                        localStorage.setItem('hideNotice', 'true');
+                    }
+                    this.showNotice = false;
+                },
+                handleNoticeCancel() {
+                    this.showNotice = false;
+                },
+                handleScroll() {
+                    this.showBackTop = window.scrollY > 500;
+                },
+                scrollToTop() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                adjustIframeHeight() {
+                    const iframe = this.$refs.discoverIframe;
+                    if (iframe) {
+                        const containerHeight = window.innerHeight - 50; // 减去底部导航栏高度
+                        iframe.style.height = `${containerHeight}px`;
+                    }
+                }
+            },
+            mounted() {
+                const hideNotice = localStorage.getItem('hideNotice');
+                if (!hideNotice) {
+                    this.showNotice = false;
+                }
+                window.addEventListener('scroll', this.handleScroll);
+                window.addEventListener('resize', this.adjustIframeHeight);
+                this.adjustIframeHeight(); // 初始化时调整高度
+            },
+            beforeUnmount() {
+                window.removeEventListener('scroll', this.handleScroll);
+                window.removeEventListener('resize', this.adjustIframeHeight);
+            },
+        });
+
+        app.use(vant);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

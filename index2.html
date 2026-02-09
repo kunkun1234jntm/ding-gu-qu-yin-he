@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>顶菇趣音盒</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif}
+        body{background:#f5f5f5;color:#333}
+        /* 添加容器样式 */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        /* 顶部标题 */
+        .header{background:#fff;padding:12px 15px;font-size:18px;font-weight:bold;text-align:center;border-bottom:1px solid #eee}
+        /* 轮播图 */
+        .carousel{position:relative;width:100%;height:180px;overflow:hidden}
+        .carousel img{width:100%;height:100%;object-fit:cover}
+        .carousel-caption{position:absolute;bottom:10px;left:10px;color:#fff;font-size:14px;background:rgba(0,0,0,.4);padding:4px 8px;border-radius:4px}
+        /* 跑马灯 */
+        .marquee{background:#fff;margin:8px 0;padding:8px 0;overflow:hidden}
+        .marquee span{display:inline-block;white-space:nowrap;padding-left:100%;animation:marquee 10s linear infinite}
+        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-200%)}}
+        /* 内容区 */
+        .content{padding:0 10px 70px}
+        .tab{display:flex;background:#fff;border-radius:8px;margin-bottom:10px}
+        .tab button{flex:1;border:none;padding:10px 0;background:transparent;font-size:15px;color:#666}
+        .tab button.active{color:#ff5a5f;font-weight:bold}
+        .section{display:none}
+        .section.active{display:block}
+        .item{display:flex;align-items:center;background:#fff;margin-bottom:8px;border-radius:8px;padding:10px}
+        .item img{width:60px;height:60px;border-radius:6px;margin-right:10px;object-fit:cover}
+        .item-info h4{font-size:15px;margin-bottom:4px}
+        .item-info p{font-size:12px;color:#888}
+        /* 底部导航 */
+        .bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:50px;background:#fff;display:flex;border-top:1px solid #eee;max-width:500px;margin:0 auto;right:0}
+        .bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:#666;text-decoration:none}
+        .bottom-nav a.active{color:#ff5a5f}
+        /* 更多页 iframe */
+        .more-iframe{width:100%;height:calc(100vh - 50px);border:none}
+        /* 关于页 */
+        .about-page{padding:20px}
+        .about-user{display:flex;align-items:center;background:#fff;border-radius:8px;padding:15px;margin-bottom:15px}
+        .user-avatar{width:50px;height:50px;border-radius:50%;margin-right:15px}
+        .user-info h3{font-size:16px;margin-bottom:5px}
+        .user-info p{font-size:14px;color:#666}
+        .about-links{background:#fff;border-radius:8px;padding:15px}
+        .link-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+        .link-item:last-child{border-bottom:none}
+        .link-icon{width:24px;height:24px;margin-right:15px}
+        .link-text{flex:1;font-size:14px;color:#333}
+        .link-arrow{width:10px;height:10px;transform:rotate(45deg);border-right:2px solid #666;border-bottom:2px solid #666}
+        .about-text{background:#fff;border-radius:8px;padding:15px;margin-top:15px;font-size:14px;line-height:1.6;color:#555}
+    </style>
+</head>
+<body>
+    <!-- 添加容器 -->
+    <div class="container">
+        <!-- 顶部标题 -->
+        <div class="header" id="pageTitle">顶菇趣音盒</div>
+
+        <!-- 轮播图 -->
+        <div class="carousel" id="carousel">
+            <img src="./pic/1.jpg" alt="轮播图">
+            
+        </div>
+
+        <!-- 跑马灯公告 -->
+        <div class="marquee" id="marquee">
+            <span>欢迎进入顶菇趣音盒，更多音效语音包正在开发中，敬请期待...</span>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="content">
+            <!-- 首页导航栏 -->
+            <div class="tab" id="tabNav">
+                <button class="tab-btn active" data-tab="voice">语音盒</button>
+                <button class="tab-btn" data-tab="player">演奏器</button>
+                <button class="tab-btn" data-tab="tool">小工具</button>
+                <button class="tab-btn" data-tab="game">小游戏</button>
+            </div>
+
+            <!-- 语音盒 -->
+            <div class="section active" id="voice">
+                <a href="https://shoureibox.maozi.io/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/xiaonnew.jpg" alt="小N语音盒">
+                        <div class="item-info">
+                            <h4>小N语音盒</h4>
+                            <p>感受N典，一起盒盒盒盒</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./wzxq/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/wzxq.jpeg" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>忘崽小乔语音盒</h4>
+                            <p>我是忘崽小乔，你们好吗？</p>
+                        </div>
+                    </div>
+                </a>
+                   <a href="./bird/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/bird.jpg" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>鸟儿摇语音盒</h4>
+                            <p>魔性鸟儿摇，一起咕咕咕</p>
+                        </div>
+                    </div>
+                </a>
+                      <a href="./lanlao/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./lanlao/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>揽佬语音盒DLC</h4>
+                            <p>别墅里面唱K，水池里面银龙鱼~</p>
+                        </div>
+                    </div>
+                </a>
+       <a href="./nailong/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./nailong/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>奶龙语音盒</h4>
+                            <p>我是奶龙，我才是奶龙！</p>
+                        </div>
+                    </div>
+                </a>
+          <a href="./touniu/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./touniu/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>头牛语音盒</h4>
+                            <p>你好，我帮你种个...哎呦喂！</p>
+                        </div>
+                    </div>
+                </a>
+                       <a href="./zhuniu/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./zhuniu/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>猪妞语音盒</h4>
+                            <p>停停停，宝子你继续，仙女下凡</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./zombie/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./zombie/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>僵尸语音盒</h4>
+                            <p>僵尸无情的侵入了你的房子！</p>
+                        </div>
+                    </div>
+                </a>
+              <a href="./haitu/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./haitu/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>海兔语音盒</h4>
+                            <p>这只海兔怎么这么会玩梗</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./yyh/tjw/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./yyh/tjw/icon.png" alt="忘崽小乔语音盒">
+                        <div class="item-info">
+                            <h4>天津卫语音盒</h4>
+                            <p>来到了天津卫，嘛也没学会~</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 演奏器 -->
+            <div class="section" id="player">
+                <a href="./yzq/jiong/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./yzq/jiong/icon.png" alt="囧架架演奏器">
+                        <div class="item-info">
+                            <h4>囧架架演奏器</h4>
+                            <p>魔性囧架架，一起演奏吧</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 小工具 -->
+            <div class="section" id="tool">
+                 <a href="./ylgybjq.html" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="https://youke1.picui.cn/s1/2025/10/19/68f43297ad481.png" alt="羊了个羊关卡编辑器">
+                        <div class="item-info">
+                            <h4>羊了个羊关卡编辑器</h4>
+                            <p>过不去关卡，那就自己做一个！</p>
+                        </div>
+                    </div>
+                <a href="./dzmy/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/muyu.png" alt="电子木鱼">
+                        <div class="item-info">
+                            <h4>电子木鱼</h4>
+                            <p>敲出宁静，敲出祥和</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./cts.html" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/j.png" alt="藏头诗生成器">
+                        <div class="item-info">
+                            <h4>藏头诗生成器</h4>
+                            <p>一键生成专属藏头诗</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./emoji.html" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/emoji.png" alt="emoji合成">
+                        <div class="item-info">
+                            <h4>emoji合成</h4>
+                            <p>创造独一无二的emoji</p>
+                        </div>
+                    </div>
+                </a>
+        <a href="./djt/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/djt.png" alt="emoji合成">
+                        <div class="item-info">
+                            <h4>毒鸡汤</h4>
+                            <p>超过千句幽默风趣的毒鸡汤</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 小游戏 -->
+            <div class="section" id="game">
+                <a href="./cxk/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/cxk.jpg" alt="蔡徐坤马里奥">
+                        <div class="item-info">
+                            <h4>蔡徐坤马里奥</h4>
+                            <p>鸡你太美版马里奥，魔性闯关</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="https://nemo.codemao.cn/w/214859287" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/sy.png" alt="沃了个鱼">
+                        <div class="item-info">
+                            <h4>沃了个鱼</h4>
+                            <p>小鲨鱼+羊了个羊的魔性结合</p>
+                        </div>
+                    </div>
+                </a>
+             
+       <a href="https://nezhasheep.maozi.io/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/nz.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>吒了个吒</h4>
+                            <p>我命由我不由天！</p>
+                        </div>
+                    </div>
+                </a>
+
+       <a href="https://www.ccw.site/player/684ea2633b0c7734d18fcd76" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/mjq.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>超级M+7</h4>
+                            <p>那一天的马里奥，马里奥起来</p>
+                        </div>
+                    </div>
+                </a>
+
+     <a href="https://www.ccw.site/player/68888db2b5a9e90d358eb95b" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/wzxq2.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>超级乔里奥</h4>
+                            <p>WZ小乔要去路上捡几个子儿</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="./mariohe/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./pic/mariohe.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>超级马里奥杂交版</h4>
+                            <p>PVZ有杂交版，我们马里奥也要有！</p>
+                        </div>
+                    </div>
+                </a>
+  
+             <a href="https://wzxqylgy-k7fmk0cu.maozi.io/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="https://pic.anxz.com/d/icon/2025/0820/1755665698_68a55522bbaf8.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>乔了个乔</h4>
+                            <p>别笑，你试你也刷不了几个子儿</p>
+                        </div>
+                    </div>
+                </a>
+                   <a href="./dzqy.html" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="https://youke1.picui.cn/s1/2025/10/19/68f4329796c8f.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>电子乔鱼</h4>
+                            <p>敲WZXQ，积子儿！</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./flgy/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./flgy/icon.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>飞了个羊</h4>
+                            <p>点击操控羊羊飞翔，躲避卡牌障碍物！</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="https://sheepgame1-5sqno0cu.maozi.io/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="https://youke1.picui.cn/s1/2025/10/19/68f432975e7aa.jpg" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>真·羊了个羊</h4>
+                            <p>卡牌里面全是羊，羊了个羊了个羊！</p>
+                        </div>
+                    </div>
+                </a>
+                    <a href="https://manboylgy-vn7qm0cu.maozi.io/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="https://youke1.picui.cn/s1/2025/09/30/68dbba9cb6c90.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>曼了个波</h4>
+                            <p>曼波曼波哈基米，通关争当领头马</p>
+                        </div>
+                    </div>
+                </a>
+                <a href="./eatgezi/" target="_blank" style="text-decoration:none;color:inherit">
+                    <div class="item">
+                        <img src="./eatgezi/static/image/ClickBefore.png" alt="刘华强85">
+                        <div class="item-info">
+                            <h4>吃掉鸽子神</h4>
+                            <p>你需要在20秒内吃掉尽可能多的鸽子神</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 更多页 -->
+            <div class="section" id="more">
+                <iframe class="more-iframe" src="https://link3.cc/quweidingguanjian"></iframe>
+            </div>
+
+            <!-- 关于页 -->
+<div class="section" id="about">
+    <div class="about-page">
+        <div class="about-user">
+            <img class="user-avatar" src="https://youke1.picui.cn/s1/2025/09/25/68d5488419a97.png" alt="用户头像">
+            <div class="user-info">
+                <h3>马里奥顶蘑菇Mario</h3>
+                <p>b站uid:1644972548</p>
+            </div>
+        </div>
+        <div class="about-links">
+     <h3 style="font-size:16px; margin-bottom:10px; color:#333;">联系我们</h3>
+            <a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=7xtwUG7bbz4tFZyak18NuLutbb6tCCew&authKey=wmBIvaX5kxjEA4fck0JbGe22VMqOedgzMUmo2kV24t3DF3gm5wFI9YvAFMr3LSXc&noverify=0&group_code=526248386" target="_blank" style="text-decoration:none;color:inherit">
+                <div class="link-item">
+                    <img class="link-icon" src="./pic/ui1.png" alt="软件Q群图标">
+                    <div class="link-text">软件Q群</div>
+                    <div class="link-arrow"></div>
+                </div>
+            </a>
+            <a href="https://qm.qq.com/q/Mi3SMXp6w2" target="_blank" style="text-decoration:none;color:inherit">
+                <div class="link-item">
+                    <img class="link-icon" src="./pic/ui2.png" alt="联系作者图标">
+                    <div class="link-text">联系作者</div>
+                    <div class="link-arrow"></div>
+                </div>
+            </a>
+            <a href="https://space.bilibili.com/1644972548" target="_blank" style="text-decoration:none;color:inherit">
+                <div class="link-item">
+                    <img class="link-icon" src="./pic/ui3.png" alt="B站账号图标">
+                    <div class="link-text">B站账号</div>
+                    <div class="link-arrow"></div>
+                </div>
+            </a>
+            <a href="https://v.douyin.com/6ycrqxbWEPA/" target="_blank" style="text-decoration:none;color:inherit">
+                <div class="link-item">
+                    <img class="link-icon" src="./pic/ui4.png" alt="抖音账号图标">
+                    <div class="link-text">抖音账号</div>
+                    <div class="link-arrow"></div>
+                </div>
+            </a>
+        </div>
+   
+        <!-- 新增的友情链接部分 -->
+        <div class="about-links" style="margin-top: 20px;">
+            <h3 style="font-size:16px; margin-bottom:10px; color:#333;">友情链接</h3>
+            <a href="https://wwma.lanzoup.com/b020btzicj" target="_blank" style="text-decoration:none;color:inherit">
+                <div class="link-item">
+                    <img class="link-icon" src="./pic/yyh.jpg" alt="趣味语音盒图标">
+                    <div class="link-text">趣味语音盒</div>
+                    <div class="link-arrow"></div>
+                </div>
+            </a>
+
+        
+        </div>
+     <div class="about-text">
+      <h3 style="font-size:16px; margin-bottom:10px; color:#333;">关于我们</h3>
+            我是一个小小的up主，专门制作整活软件或游戏<br>请在b站关注我，我会整更多的活给你！
+        </div>
+    </div>
+</div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <a href="#" data-tab="voice" class="nav-btn active">首页</a>
+            <a href="#" data-tab="more" class="nav-btn">更多</a>
+            <a href="#" data-tab="about" class="nav-btn">关于</a>
+        </div>
+    </div>
+
+    <script>
+        // 选项卡切换
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.section');
+        const carousel = document.getElementById('carousel');
+        const marquee = document.getElementById('marquee');
+        const tabNav = document.getElementById('tabNav');
+        const pageTitle = document.getElementById('pageTitle');
+
+        function switchTab(tabId){
+            sections.forEach(sec=>sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            tabBtns.forEach(btn=>btn.classList.remove('active'));
+            document.querySelectorAll(`[data-tab="${tabId}"]`).forEach(el=>el.classList.add('active'));
+
+            navBtns.forEach(btn=>btn.classList.remove('active'));
+            document.querySelectorAll(`.nav-btn[data-tab="${tabId}"]`).forEach(el=>el.classList.add('active'));
+
+            // 显示/隐藏首页元素
+            if(tabId === 'voice' || tabId === 'player' || tabId === 'tool' || tabId === 'game'){
+                carousel.style.display = 'block';
+                marquee.style.display = 'block';
+                tabNav.style.display = 'flex';
+                pageTitle.textContent = '顶菇趣音盒';
+            } else if(tabId ==='more'){
+                carousel.style.display = 'none';
+                marquee.style.display = 'none';
+                tabNav.style.display = 'none';
+                pageTitle.textContent = '更多软件';
+            } else if(tabId === 'about'){
+                carousel.style.display = 'none';
+                marquee.style.display = 'none';
+                tabNav.style.display = 'none';
+                pageTitle.textContent = '关于我们';
+            }
+        }
+
+        tabBtns.forEach(btn=>{
+            btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+        });
+        navBtns.forEach(btn=>{
+            btn.addEventListener('click',(e)=>{
+                e.preventDefault();
+                switchTab(btn.dataset.tab);
+            });
+        });
+    </script>
+</body>
+</html>

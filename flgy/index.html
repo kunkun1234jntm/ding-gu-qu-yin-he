@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta id="viewport" name="viewport" content="width=device-width,user-scalable=no" />
+	<script type="text/javascript" src="game.js"></script>
+	
+	
+	
+	<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "jtddl410lx");
+</script>
+	<title>飞了个羊 - flappy sheep</title>
+	<style type="text/css">
+		body {
+			margin: 0px;
+		}
+	</style>
+	<script language=javascript>
+		// 添加音乐播放函数
+		function playBackgroundMusic() {
+			var audio = document.getElementById('bgMusic');
+			audio.loop = true;
+			
+			// 处理自动播放限制
+			var playPromise = audio.play();
+			
+			if (playPromise !== undefined) {
+				playPromise.then(function() {
+					// 自动播放成功
+					console.log("背景音乐开始播放");
+				}).catch(function(error) {
+					// 自动播放失败，需要用户交互
+					console.log("自动播放被阻止，需要用户交互");
+					document.addEventListener('click', function musicInteraction() {
+						audio.play().then(function() {
+							console.log("通过用户交互开始播放音乐");
+							document.removeEventListener('click', musicInteraction);
+						});
+					});
+				});
+			}
+		}
+		
+		// 页面加载完成后播放音乐
+		window.addEventListener('load', function() {
+			setTimeout(playBackgroundMusic, 1000); // 延迟1秒播放
+		});
+
+		var mebtnopenurl = 'https://link3.cc/quweidingguanjian';
+		window.shareData = {
+			"imgUrl": "icon.png",
+			"timeLineLink": "https://link3.cc/quweidingguanjian",
+			"tTitle": "飞了个羊",
+			"tContent": "从前有一只羊，飞着飞着就撞了。"
+		};
+		document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+
+			WeixinJSBridge.on('menu:share:appmessage', function (argv) {
+				WeixinJSBridge.invoke('sendAppMessage', {
+					"img_url": window.shareData.imgUrl,
+					"link": window.shareData.timeLineLink,
+					"desc": window.shareData.tContent,
+					"title": window.shareData.tTitle
+				}, function (res) {
+					document.location.href = mebtnopenurl;
+				})
+			});
+
+			WeixinJSBridge.on('menu:share:timeline', function (argv) {
+				WeixinJSBridge.invoke('shareTimeline', {
+					"img_url": window.shareData.imgUrl,
+					"img_width": "640",
+					"img_height": "640",
+					"link": window.shareData.timeLineLink,
+					"desc": window.shareData.tContent,
+					"title": window.shareData.tTitle
+				}, function (res) {
+					document.location.href = mebtnopenurl;
+				});
+			});
+		}, false);
+		function dp_submitScore(a, b) {
+			if (a && b >= a && b > 10) {
+				//alert("新纪录哦！你过了"+b+"关!")
+				dp_share(b)
+			}
+		}
+
+		function dp_Ranking() {
+			document.location.href = mebtnopenurl;
+		}
+		function dp_share(t) {
+			//document.title = "" + t + "";
+			//document.getElementById("share").style.display = "";
+			//window.shareData.tTitle = document.title;
+		}
+	</script>
+</head>
+
+<body>
+	<!-- 添加音频元素 -->
+	<audio id="bgMusic" loop>
+		<source src="ylgy.mp3" type="audio/mpeg">
+		您的浏览器不支持音频元素。
+	</audio>
+	
+	<div style="text-align:center;">
+		<canvas id="linkScreen">
+			很遗憾，您的浏览器不支持HTML5，请使用支持HTML5的浏览器。
+		</canvas>
+	</div>
+	<div id="mask_container" align="center"
+		style="width: 100%; height: 100%; position: absolute; left: 0px; top: 0px; display: none; z-index: 100000; background-color: rgb(255, 255, 255);">
+		<img id="p2l" src="img/p2l.jpg"
+			style="position: absolute;left: 50%;top: 50%;-webkit-transform:translateX(-50%) translateY(-50%);transform:translateX(-50%) translateY(-50%)">
+	</div>
+	<div id=share style="display:none">
+		<img width=100% src="2000.png" style="position:absolute;top:0;left:0;display:"
+			onclick="document.getElementById('share').style.display='none';">
+	</div>
+</body>
+
+</html>
