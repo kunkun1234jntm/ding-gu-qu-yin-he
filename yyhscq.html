@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语音盒生成器</title>
+    <style>
+        /* ===== 全局样式：完全继承1.html的UI基因，但功能剥离 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        body {
+            background-color: #f2f4f1;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 700px; /* 稍宽，适应双栏配置区 */
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px 0;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #21d399, #21d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        .text-input, .text-input-sm {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+        .text-input:focus, .text-input-sm:focus {
+            outline: none;
+            border-color: #21d399;
+        }
+        .text-input-sm {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .generate-btn {
+            width: 100%;
+            background: #21d399;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .generate-btn:hover {
+            background: #1aa87d;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 16px;
+            border-radius: 30px;
+            background: transparent;
+            color: #555;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .nav-tab.active {
+            background: #21d399;
+            color: white;
+        }
+        .config-panel {
+            display: none;
+        }
+        .config-panel.active {
+            display: block;
+        }
+        .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: currentColor;
+            mask-size: cover;
+            -webkit-mask-size: cover;
+        }
+        .icon-mambo {
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E");
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/%3E%3C/svg%3E");
+        }
+        .theme-option {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .theme-radio {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .region-card, .sound-card {
+            background: #f9fbfa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid #21d399;
+        }
+        .btn-small {
+            background: #e0e0e0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #333;
+            transition: 0.2s;
+        }
+        .btn-small:hover {
+            background: #ccc;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #21d399;
+            color: #21d399;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-outline:hover {
+            background: #21d399;
+            color: white;
+        }
+        .upload-area {
+            border: 2px dashed #b2dfdb;
+            padding: 12px;
+            border-radius: 12px;
+            background: #f0f9f8;
+            position: relative;
+            text-align: center;
+        }
+        .upload-input {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            cursor: pointer;
+        }
+        .base64-preview {
+            font-size: 11px;
+            color: #1aa87d;
+            word-break: break-all;
+            max-height: 60px;
+            overflow-y: auto;
+            background: white;
+            padding: 6px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        .flex-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .flex-row .form-group {
+            flex: 1;
+        }
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .error-msg {
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-bottom: 20px;
+        }
+        .hint {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+
+        <!-- 错误/提示 区域 -->
+        <div class="error-msg hidden" id="errorMsg"></div>
+        <div class="toast" id="toast"></div>
+
+        <!-- 导航选项卡 —— 双配置区域导航 -->
+        <div class="nav-tabs" id="navTabs">
+            <div class="nav-tab active" data-tab="main">语音盒主配置</div>
+            <div class="nav-tab" data-tab="copyright">版权信息配置</div>
+        </div>
+
+        <!-- ========== 语音盒主配置面板 ========== -->
+        <div id="panelMain" class="config-panel active">
+            <div class="card">
+                <!-- 基础信息区 对应data.json字段 -->
+                <div class="form-group">
+                    <label class="form-label">① 语音盒名字</label>
+                    <input type="text" class="text-input" id="appName" placeholder="例如: 马里奥语音盒">
+                </div>
+                <div class="flex-row">
+                    <div class="form-group">
+                        <label class="form-label">② 包名 </label>
+                        <input type="text" class="text-input-sm" id="packageName" placeholder="com.example.voicebox">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">③ 版本名</label>
+                        <input type="text" class="text-input-sm" id="versionName" placeholder="1.0" value="1.0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">④ 版本号</label>
+                        <input type="number" class="text-input-sm" id="versionInt" placeholder="1" value="1">
+                    </div>
+                </div>
+
+                <!-- 上传图标 + 大图 base64 -->
+                <div class="flex-row">
+                    <div class="form-group">
+                        <label class="form-label">⑤ APP图标</label>
+                        <div class="upload-area">
+                            点击或拖拽上传 图标
+                            <input type="file" id="iconUpload" accept="image/*" class="upload-input">
+                            <div id="iconBase64Preview" class="base64-preview">未上传</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⑥ 长方形大图(在语音盒APP上方显示)</label>
+                        <div class="upload-area">
+                            点击或拖拽上传 大图
+                            <input type="file" id="bigpicUpload" accept="image/*" class="upload-input">
+                            <div id="bigpicBase64Preview" class="base64-preview">未上传</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 主题选择 + console指令 -->
+                <div class="form-group">
+                    <label class="form-label">⑦ 语音盒主题</label>
+                    <div class="theme-option">
+                        <label class="theme-radio">
+                            <input type="radio" name="theme" value="1" checked> 清新绿
+                        </label>
+                        <label class="theme-radio">
+                            <input type="radio" name="theme" value="2"> 可爱粉
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 动态区域&音效管理 (对应regions) -->
+                <div class="form-group">
+                    <label class="form-label">⑧ 区域与音效配置</label>
+                    <div id="regionsContainer"></div>
+                    <button type="button" id="addRegionBtn" class="btn-outline" style="margin-top: 8px;">+ 添加区域</button>
+                </div>
+
+                <!-- 导入/导出 & 生成语音盒JSON -->
+                <div class="action-bar">
+                    <button class="btn-small" id="exportMainJson">📤 导出配置</button>
+                    <button class="btn-small" id="importMainJsonBtn">📥 导入配置</button>
+                    <input type="file" id="importMainFile" accept=".json,application/json" style="display: none;">
+                </div>
+                <button class="generate-btn" id="generateVoiceBoxBtn" style="margin-top: 12px;">
+                    <span>⚡ 生成语音盒iApp工程</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ========== 版权信息配置面板 ========== 对应bq.json结构 -->
+        <div id="panelCopyright" class="config-panel">
+            <div class="card">
+                <div class="form-group">
+                    <label class="form-label">① QQ号</label>
+                    <input type="text" class="text-input" id="csqq" placeholder="你的QQ号" >
+                </div>
+                <div class="form-group">
+                    <label class="form-label">② QQ群号</label>
+                    <input type="text" class="text-input" id="groupqq" placeholder="你的QQ群的号">
+                </div>
+                <div class="flex-row">
+                    <div class="form-group">
+                        <label class="form-label">跑马灯开关</label>
+                        <select id="rolltxton" class="text-input-sm">
+                            <option value="1">1 开启</option>
+                            <option value="2" selected>2 关闭</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">广告开关(开启将会覆盖语音盒大图)</label>
+                        <select id="adshow" class="text-input-sm">
+                            <option value="1">1 开启</option>
+                            <option value="2" selected>2 关闭</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">应用导航栏开关</label>
+                        <select id="open" class="text-input-sm">
+                            <option value="1" selected>1 开启</option>
+                            <option value="2">2 关闭</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">跑马灯内容</label>
+                    <input type="text" class="text-input" id="rolltxt" placeholder="跑马灯滚动内容/公告">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">广告图</label>
+                    <div class="upload-area">
+                        上传广告图
+                        <input type="file" id="adimagesUpload" accept="image/*" class="upload-input">
+                        <div id="adimagesPreview" class="base64-preview">未上传</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">广告跳转地址</label>
+                    <input type="text" class="text-input" id="adurl" placeholder="https://">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">原创软件合集链接</label>
+                    <input type="text" class="text-input" id="lanzouurl" placeholder="可选">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">团队介绍 (换行请使用“小于号+br+大于号”)</label>
+                    <textarea class="text-input" id="teamintroduce" rows="3">关于我的团队：我们是一个专注于分享的团队...</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">关注作者地址</label>
+                    <input type="text" class="text-input" id="yhq" placeholder="作者视频账号主页，可选">
+                </div>
+                
+                <div class="action-bar">
+                    <button class="btn-small" id="exportCopyrightJson">📤 导出版权配置</button>
+                    <button class="btn-small" id="importCopyrightBtn">📥 导入配置</button>
+                    <input type="file" id="importCopyrightFile" accept=".json,application/json" style="display: none;">
+                </div>
+                <button class="generate-btn" id="saveCopyrightToVoiceBoxBtn" style="margin-top: 12px; background: #9c6b9f;">
+                    <span>💾 保存至语音盒</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 语音盒生成器 · 主逻辑 (剥离1.html原有功能, 实现双配置生成)
+        // ============================================================
+
+        // ---------- DOM 元素 ----------
+        const panels = {
+            main: document.getElementById('panelMain'),
+            copyright: document.getElementById('panelCopyright')
+        };
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const toastEl = document.getElementById('toast');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // ---------- 全局变量存放Base64及配置数据 ----------
+        let iconBase64 = '';       // 带 data:image 前缀
+        let bigpicBase64 = '';    // 带前缀
+        let adImageBase64 = '';   // 广告图
+
+        // ---------- 区域动态数据 ----------
+        let regions = [
+            {
+                regionName: "区域1",
+                sounds: [
+                    { label: "音效1", file: "" },   // file存的是base64? 实际bjson要求文件名，但为了演示存储上传音频base64占位
+                ]
+            }
+        ]; // 默认一个区域
+
+        // ---------- 初始化渲染区域 ----------
+        const regionsContainer = document.getElementById('regionsContainer');
+
+        function renderRegions() {
+            if (!regionsContainer) return;
+            let html = '';
+            regions.forEach((region, rIndex) => {
+                html += `<div class="region-card" data-region-index="${rIndex}">
+                    <div class="flex-row" style="align-items: center;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>区域名称</label>
+                            <input type="text" class="text-input-sm" value="${escapeHtml(region.regionName || '')}" placeholder="区域名" onchange="updateRegionName(${rIndex}, this.value)">
+                        </div>
+                        <button class="btn-small" style="margin-bottom: 12px;" onclick="removeRegion(${rIndex})">❌ 删除区域</button>
+                    </div>
+                    <div style="padding-left: 8px;">
+                        <label>音效列表：</label>`;
+                region.sounds.forEach((sound, sIndex) => {
+                    html += `<div class="sound-card" style="margin-left: 0; padding: 12px;" data-sound-index="${sIndex}">
+                        <div class="flex-row">
+                            <div class="form-group" style="flex:2;">
+                                <label>音效名称</label>
+                                <input type="text" class="text-input-sm" value="${escapeHtml(sound.label || '')}" placeholder="音效名" onchange="updateSoundLabel(${rIndex}, ${sIndex}, this.value)">
+                            </div>
+                            <div class="form-group" style="flex:2;">
+                                <label>上传音频(MP3)</label>
+                                <div class="upload-area" style="padding: 6px;">
+                                    选择文件
+                                    <input type="file" accept="audio/*" class="upload-input" onchange="handleAudioUpload(event, ${rIndex}, ${sIndex})">
+                                </div>
+                                <div id="audioName_${rIndex}_${sIndex}" style="font-size: 11px; color: #1aa87d;">${sound.file ? sound.file.substring(0, 20)+'…' : '未上传'}</div>
+                            </div>
+                            <button class="btn-small" onclick="removeSound(${rIndex}, ${sIndex})">🗑️</button>
+                        </div>
+                    </div>`;
+                });
+                html += `<button class="btn-small" onclick="addSound(${rIndex})" style="margin: 8px 0 0 20px;">+ 添加音效</button>
+                    </div>
+                </div>`;
+            });
+            regionsContainer.innerHTML = html;
+        }
+
+        // 辅助转义
+        window.escapeHtml = function(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '&quot;');
+        };
+
+        // 全局函数以供onchange调用
+        window.updateRegionName = function(rIndex, val) {
+            if (regions[rIndex]) regions[rIndex].regionName = val;
+        };
+        window.updateSoundLabel = function(rIndex, sIndex, val) {
+            if (regions[rIndex]?.sounds[sIndex]) regions[rIndex].sounds[sIndex].label = val;
+        };
+        window.removeRegion = function(rIndex) {
+            regions.splice(rIndex, 1);
+            renderRegions();
+        };
+        window.addSound = function(rIndex) {
+            if (regions[rIndex]) {
+                regions[rIndex].sounds.push({ label: "新音效", file: "" });
+                renderRegions();
+            }
+        };
+        window.removeSound = function(rIndex, sIndex) {
+            if (regions[rIndex]?.sounds) {
+                regions[rIndex].sounds.splice(sIndex, 1);
+                renderRegions();
+            }
+        };
+        // 音频上传处理 - 转为base64存储
+window.handleAudioUpload = function(e, rIndex, sIndex) {
+    const file = e.target.files[0];
+    if (file && regions[rIndex]?.sounds[sIndex]) {
+        // 显示上传中状态
+        const displayEl = document.getElementById(`audioName_${rIndex}_${sIndex}`);
+        if (displayEl) displayEl.innerText = '转换中...';
+        
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            // 获取base64字符串（包含 data:audio/xxx;base64, 前缀）
+            const base64Audio = ev.target.result;
+            // 存储完整base64到file字段
+            regions[rIndex].sounds[sIndex].file = base64Audio;
+            // 更新显示：显示文件名+已编码标识
+            if (displayEl) {
+                displayEl.innerHTML = `<span style="color:#21d399;">✓ ${file.name}</span><br><small style="color:#666;">base64已编码</small>`;
+            }
+            showToast(`音频 ${file.name} 已上传`);
+        };
+        reader.onerror = function() {
+            showError('音频读取失败');
+            if (displayEl) displayEl.innerText = '上传失败';
+        };
+        reader.readAsDataURL(file); // 转为base64
+    }
+};
+
+        // 添加区域
+        document.getElementById('addRegionBtn')?.addEventListener('click', function() {
+            regions.push({ regionName: "新区域", sounds: [{ label: "音效", file: "" }] });
+            renderRegions();
+        });
+
+        // ---------- 主题选择监听 console ----------
+        const themeRadios = document.querySelectorAll('input[name="theme"]');
+        themeRadios.forEach(radio => {
+            radio.addEventListener('change', function(e) {
+                if (e.target.value === '1') {
+                    console.log("你选的是清新绿");
+                    iapp.s('sss.apptheme', "1");
+                    iapp.fn('scq.jieya()');
+                } else if (e.target.value === '2') {
+                    console.log("你选的是可爱粉");
+                    iapp.s('sss.apptheme', "2");
+                    iapp.fn('scq.jieya()');
+                }
+            });
+        });
+
+        // ---------- 图片上传转base64 ----------
+        function handleImageUpload(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                callback(e.target.result); // 包含 data:image 前缀
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 图标上传
+        document.getElementById('iconUpload').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                handleImageUpload(e.target.files[0], (base64) => {
+                    iconBase64 = base64;
+                    document.getElementById('iconBase64Preview').innerText = base64.substring(0, 60) + '… [已编码]';
+                });
+            }
+        });
+        document.getElementById('bigpicUpload').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                handleImageUpload(e.target.files[0], (base64) => {
+                    bigpicBase64 = base64;
+                    document.getElementById('bigpicBase64Preview').innerText = base64.substring(0, 60) + '… [已编码]';
+                });
+            }
+        });
+        // 广告图
+        document.getElementById('adimagesUpload').addEventListener('change', function(e) {
+            if (e.target.files[0]) {
+                handleImageUpload(e.target.files[0], (base64) => {
+                    adImageBase64 = base64;
+                    document.getElementById('adimagesPreview').innerText = base64.substring(0, 60) + '… [已编码]';
+                });
+            }
+        });
+
+        // ---------- 导航切换 ----------
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                navTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const target = this.dataset.tab;
+                panels.main.classList.remove('active');
+                panels.copyright.classList.remove('active');
+                if (target === 'main') panels.main.classList.add('active');
+                else panels.copyright.classList.add('active');
+            });
+        });
+
+        // ---------- 导出/导入 语音盒主配置 ----------
+        function gatherMainJson() {
+            const themeSelected = document.querySelector('input[name="theme"]:checked')?.value || '1';
+            return {
+                name: document.getElementById('appName').value,
+                versionname: document.getElementById('versionName').value,
+                versionint: parseInt(document.getElementById('versionInt').value) || 1,
+                icon: iconBase64 || "data:image/png;base64,", 
+                bigpic: bigpicBase64 || "data:image/png;base64,",
+                package: document.getElementById('packageName').value,
+                theme: themeSelected,
+                regions: regions.map(r => ({
+                    regionName: r.regionName,
+                    sounds: r.sounds.map(s => ({ label: s.label, file: s.file || "" }))
+                }))
+            };
+        }
+
+        document.getElementById('exportMainJson').addEventListener('click', function() {
+            const json = gatherMainJson();
+            iapp.s('sss.jsonblob', json);
+            downloadJSON(json, '语音盒主配置.json');
+            showToast('✅ 已导出语音盒主配置');
+        });
+
+        document.getElementById('importMainJsonBtn').addEventListener('click', function() {
+            document.getElementById('importMainFile').click();
+        });
+        document.getElementById('importMainFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        // 填充基础字段
+                        document.getElementById('appName').value = imported.name || '';
+                        document.getElementById('versionName').value = imported.versionname || '';
+                        document.getElementById('versionInt').value = imported.versionint || 1;
+                        document.getElementById('packageName').value = imported.package || '';
+                        if (imported.theme) {
+                            const val = String(imported.theme);
+                            document.querySelector(`input[name="theme"][value="${val}"]`).checked = true;
+                        }
+                        // base64预览设标记
+                        if (imported.icon) { iconBase64 = imported.icon; document.getElementById('iconBase64Preview').innerText = '已导入 base64 图标'; }
+                        if (imported.bigpic) { bigpicBase64 = imported.bigpic; document.getElementById('bigpicBase64Preview').innerText = '已导入 base64 大图'; }
+                        if (imported.regions) { regions = imported.regions; renderRegions(); }
+                        showToast('✅ 导入主配置成功');
+                    } catch (e) { showError('JSON 解析失败'); }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // ---------- 生成语音盒 设置yyhjson ----------
+        window.yyhjson = null;  // 供外部使用
+        document.getElementById('generateVoiceBoxBtn').addEventListener('click', function() {
+            window.yyhjson = gatherMainJson();
+            console.log('✅ yyhjson 已设置', window.yyhjson);
+            showToast('✅ 已设置变量 yyhjson (语音盒主配置)');
+        });
+
+        // ---------- 版权信息配置 收集 & 导入导出 ----------
+        function gatherCopyrightJson() {
+            return {
+                code: 1,
+                msg: "获取版权信息成功",
+                data: {
+                    dataInfo: {
+                        csqq: document.getElementById('csqq').value,
+                        groupqq: document.getElementById('groupqq').value,
+                        rolltxton: document.getElementById('rolltxton').value,
+                        rolltxt: document.getElementById('rolltxt').value,
+                        adimages: adImageBase64 || "",
+                        adurl: document.getElementById('adurl').value,
+                        adshow: document.getElementById('adshow').value,
+                        lanzouurl: document.getElementById('lanzouurl').value,
+                        teamintroduce: document.getElementById('teamintroduce').value,
+                        open: parseInt(document.getElementById('open').value),
+                        yhq: document.getElementById('yhq').value,
+                        ads: []
+                    }
+                },
+                token: 123
+            };
+        }
+
+        document.getElementById('exportCopyrightJson').addEventListener('click', function() {
+            const json = gatherCopyrightJson();
+            iapp.s('sss.jsonblob', gatherCopyrightJson());
+            downloadJSON(json, '版权信息配置.json');
+            showToast('✅ 已导出版权配置');
+        });
+
+        document.getElementById('importCopyrightBtn').addEventListener('click', function() {
+            document.getElementById('importCopyrightFile').click();
+        });
+        document.getElementById('importCopyrightFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const imp = JSON.parse(ev.target.result);
+                        const d = imp.data?.dataInfo || imp; // 兼容
+                        document.getElementById('csqq').value = d.csqq || '';
+                        document.getElementById('groupqq').value = d.groupqq || '';
+                        document.getElementById('rolltxton').value = d.rolltxton || '2';
+                        document.getElementById('rolltxt').value = d.rolltxt || '';
+                        if (d.adimages) { adImageBase64 = d.adimages; document.getElementById('adimagesPreview').innerText = '已导入广告图'; }
+                        document.getElementById('adurl').value = d.adurl || '';
+                        document.getElementById('adshow').value = d.adshow || '2';
+                        document.getElementById('lanzouurl').value = d.lanzouurl || '';
+                        document.getElementById('teamintroduce').value = d.teamintroduce || '关于我的团队：我们是一个专注于分享的团队...';
+                        document.getElementById('open').value = d.open || '1';
+                        document.getElementById('yhq').value = d.yhq || '';
+                        showToast('✅ 导入版权配置成功');
+                    } catch(e) { showError('JSON解析失败'); }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // ---------- 保存至语音盒 按钮：设置 bqmjson ----------
+        window.bqmjson = null;
+        document.getElementById('saveCopyrightToVoiceBoxBtn').addEventListener('click', function() {
+            window.bqmjson = gatherCopyrightJson();
+            console.log('✅ bqmjson 已设置', window.bqmjson);
+            showToast('✅ 已设置变量 bqmjson (版权配置)');
+        });
+
+        // ---------- 通用工具 ----------
+        function downloadJSON(obj, filename) {
+            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            iapp.s('sss.filename', filename);
+            iapp.fn('scq.xiazai()');
+        }
+
+        function showToast(msg) {
+            toastEl.textContent = msg;
+            toastEl.style.opacity = '1';
+            setTimeout(() => toastEl.style.opacity = '0', 2000);
+        }
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.remove('hidden');
+            setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+        }
+
+        // ---------- 初始渲染 ----------
+        renderRegions();
+
+        // 主题默认console (清新绿)
+        console.log("你选的是清新绿");
+        iapp.s('sss.apptheme', "1");
+        iapp.fn('scq.jieya()');
+
+        // 初始化版权文本域默认值 (从introduce.txt感知)
+        const defaultIntroduce = `关于我的团队<br><br>我们是一个专注于分享的团队,我们的任务就是每天给广大群友分享资源<br><br>我们会每天给大家分享：线报、福利活动、购物优惠、原创技术、各种好玩的软件或程序<br><br>所有资源均来自于网络,如果有侵权请联系我`;
+        document.getElementById('teamintroduce').value = defaultIntroduce;
+    </script>
+</body>
+</html>
