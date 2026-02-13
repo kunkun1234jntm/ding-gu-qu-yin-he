@@ -344,6 +344,12 @@
                 <button class="generate-btn" id="generateVoiceBoxBtn" style="margin-top: 12px;">
                     <span>⚡ 生成语音盒iApp工程</span>
                 </button>
+                <!--
+            <button class="generate-btn" id="WatchVideoBtn" style="margin-top: 12px; background: #ff6b6b;">
+                    <span>🎥 观看视频详细教程</span>
+                </button>
+                  -->
+                
             </div>
         </div>
 
@@ -351,38 +357,38 @@
         <div id="panelCopyright" class="config-panel">
             <div class="card">
                 <div class="form-group">
-                    <label class="form-label">① QQ号</label>
+                    <label class="form-label">① QQ号(软件上可联系作者)</label>
                     <input type="text" class="text-input" id="csqq" placeholder="你的QQ号" >
                 </div>
                 <div class="form-group">
-                    <label class="form-label">② QQ群号</label>
+                    <label class="form-label">② QQ群号(可让粉丝加你的群)</label>
                     <input type="text" class="text-input" id="groupqq" placeholder="你的QQ群的号">
                 </div>
-                <div class="flex-row">
+               
                     <div class="form-group">
-                        <label class="form-label">跑马灯开关</label>
+                        <label class="form-label">跑马灯公告开关</label>
                         <select id="rolltxton" class="text-input-sm">
                             <option value="1">1 开启</option>
                             <option value="2" selected>2 关闭</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">广告开关(开启将会覆盖语音盒大图)</label>
+                        <label class="form-label">广告图开关(开启将会覆盖语音盒大图)</label>
                         <select id="adshow" class="text-input-sm">
                             <option value="1">1 开启</option>
                             <option value="2" selected>2 关闭</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">应用导航栏开关</label>
+                        <label class="form-label">应用导航栏开关(首页-更多-关于)</label>
                         <select id="open" class="text-input-sm">
                             <option value="1" selected>1 开启</option>
                             <option value="2">2 关闭</option>
                         </select>
                     </div>
-                </div>
+              
                 <div class="form-group">
-                    <label class="form-label">跑马灯内容</label>
+                    <label class="form-label">跑马灯公告内容</label>
                     <input type="text" class="text-input" id="rolltxt" placeholder="跑马灯滚动内容/公告">
                 </div>
                 <div class="form-group">
@@ -564,11 +570,11 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
                 if (e.target.value === '1') {
                     console.log("你选的是清新绿");
                     iapp.s('sss.apptheme', "1");
-                    iapp.fn('scq.jieya()');
+                    //iapp.fn('scq.jieya()');
                 } else if (e.target.value === '2') {
                     console.log("你选的是可爱粉");
                     iapp.s('sss.apptheme', "2");
-                    iapp.fn('scq.jieya()');
+                    //iapp.fn('scq.jieya()');
                 }
             });
         });
@@ -641,10 +647,12 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
         }
 
         document.getElementById('exportMainJson').addEventListener('click', function() {
+            
+            
             const json = gatherMainJson();
-            iapp.s('sss.jsonblob', json);
+            
             downloadJSON(json, '语音盒主配置.json');
-            showToast('✅ 已导出语音盒主配置');
+            //showToast('✅ 已导出语音盒主配置');
         });
 
         document.getElementById('importMainJsonBtn').addEventListener('click', function() {
@@ -677,13 +685,25 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
             }
         });
 
-        // ---------- 生成语音盒 设置yyhjson ----------
+        // ---------- 生成语音盒 设置yyhjson ---------- 
         window.yyhjson = null;  // 供外部使用
         document.getElementById('generateVoiceBoxBtn').addEventListener('click', function() {
+       
             window.yyhjson = gatherMainJson();
             console.log('✅ yyhjson 已设置', window.yyhjson);
-            showToast('✅ 已设置变量 yyhjson (语音盒主配置)');
+            iapp.s('sss.yyhjson', JSON.stringify(window.yyhjson, null, 2));
+            window.bqmjson = gatherCopyrightJson();
+            iapp.s('sss.bqmjson', JSON.stringify(window.bqmjson, null, 2));
+            iapp.fn('scq.sc()');
+            //showToast('✅ 已设置变量 yyhjson (语音盒主配置)');
         });
+        
+        document.getElementById('WatchVideoBtn').addEventListener('click', function() {
+       
+            iapp.fn('js.nzllq("https://www.baidu.com/")');
+            //showToast('✅ 已设置变量 yyhjson (语音盒主配置)');
+        });
+
 
         // ---------- 版权信息配置 收集 & 导入导出 ----------
         function gatherCopyrightJson() {
@@ -712,9 +732,8 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
 
         document.getElementById('exportCopyrightJson').addEventListener('click', function() {
             const json = gatherCopyrightJson();
-            iapp.s('sss.jsonblob', gatherCopyrightJson());
             downloadJSON(json, '版权信息配置.json');
-            showToast('✅ 已导出版权配置');
+            //showToast('✅ 已导出版权配置');
         });
 
         document.getElementById('importCopyrightBtn').addEventListener('click', function() {
@@ -751,7 +770,8 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
         document.getElementById('saveCopyrightToVoiceBoxBtn').addEventListener('click', function() {
             window.bqmjson = gatherCopyrightJson();
             console.log('✅ bqmjson 已设置', window.bqmjson);
-            showToast('✅ 已设置变量 bqmjson (版权配置)');
+            iapp.s('sss.bqmjson', JSON.stringify(window.bqmjson, null, 2));
+            showToast('✅ 版权配置已保存至语音盒');
         });
 
         // ---------- 通用工具 ----------
@@ -761,14 +781,15 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
             const a = document.createElement('a');
             a.href = url;
             a.download = filename;
+            iapp.s('sss.jsonobj', JSON.stringify(obj, null, 2));
             iapp.s('sss.filename', filename);
             iapp.fn('scq.xiazai()');
+            
+            
         }
 
         function showToast(msg) {
-            toastEl.textContent = msg;
-            toastEl.style.opacity = '1';
-            setTimeout(() => toastEl.style.opacity = '0', 2000);
+            iapp.fn('js.showToast("'+msg+'")');
         }
         function showError(msg) {
             errorMsg.textContent = msg;
@@ -782,7 +803,7 @@ window.handleAudioUpload = function(e, rIndex, sIndex) {
         // 主题默认console (清新绿)
         console.log("你选的是清新绿");
         iapp.s('sss.apptheme', "1");
-        iapp.fn('scq.jieya()');
+        //iapp.fn('scq.jieya()');
 
         // 初始化版权文本域默认值 (从introduce.txt感知)
         const defaultIntroduce = `关于我的团队<br><br>我们是一个专注于分享的团队,我们的任务就是每天给广大群友分享资源<br><br>我们会每天给大家分享：线报、福利活动、购物优惠、原创技术、各种好玩的软件或程序<br><br>所有资源均来自于网络,如果有侵权请联系我`;
