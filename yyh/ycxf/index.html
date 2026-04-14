@@ -489,6 +489,7 @@ ul {
 		<li m="yy7.mp3">越来越不懂+塔菲喵</li>
                 <li m="yy8.mp3">Turn Up+关注塔菲喵</li>
 		<li m="yy9.mp3">劳伦斯先生+塔菲喵</li>
+                 <li m="yy10.mp3">幻昼+关注塔菲喵</li>
 
 
 
@@ -574,250 +575,423 @@ ul {
     <div class="toast" id="toast"></div>
 
     <script>
-        // JavaScript代码保持不变，只需确保选择器更新为class
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const audioBuffers = {};
-        let audioList = [];
-        let currentAudio = null;
-        let delayTime = 0;
-        let autoPlayEnabled = false;
-        let loopEnabled = false;
-        let autoPlayIndex = 0;
+// 音频核心与变声器
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const audioBuffers = {};
+let audioList = [];
+let currentAudio = null;
+let delayTime = 0;
+let autoPlayEnabled = false;
+let loopEnabled = false;
+let autoPlayIndex = 0;
 
-        let startTime = Date.now();
-        let totalFiles = 0;
-        let loadedFiles = 0;
+// 变声器状态
+let currentVoiceMode = 'normal';
+let customPlaybackRate = 1.0;
 
-        function preloadAudio() {
-            const audioElements = document.querySelectorAll('ul li');
-            totalFiles = audioElements.length;
+// 预设参数
+const modePresets = {
+    normal:       { rate: 1.0,  detune: 0,    filter: null },
+    duck:         { rate: 1.20, detune: 500,  filter: null },
+    monster:      { rate: 0.65, detune: -300, filter: null },
+    robot:        { rate: 0.9,  detune: 0,    filter: 'robot' },
+    chipmunk:     { rate: 1.9,  detune: 600,  filter: null },
+    echo:         { rate: 1.0,  detune: 0,    filter: 'echo' },
+    telephone:    { rate: 1.0,  detune: 0,    filter: 'telephone' },
+    underwater:   { rate: 0.85, detune: -150, filter: 'underwater' },
+    electric:     { rate: 1.0,  detune: 0,    filter: 'electric' },
+    demon:        { rate: 0.55, detune: -800, filter: 'demon' },
+    hyperchipmunk:{ rate: 2.3,  detune: 800,  filter: null },
+};
 
-            audioElements.forEach((item, index) => {
-                const soundUrl = item.getAttribute('m');
-                fetch(soundUrl)
-                    .then(response => response.arrayBuffer())
-                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-                    .then(audioBuffer => {
-                        audioBuffers[soundUrl] = audioBuffer;
-                        loadedFiles++;
-                        updateLoadingProgress();
-                    })
-                    .catch(error => {
-                        console.error(`Failed to load audio: ${soundUrl}`, error);
-                        loadedFiles++;
-                        updateLoadingProgress();
-                    });
-            });
-        }
-
-        function updateLoadingProgress() {
-            const progress = (loadedFiles / totalFiles) * 100;
-            const progressBar = document.getElementById('loading-progress');
-            if (progressBar) {
-                progressBar.style.width = `${progress}%`;
-            }
-
-            const elapsedTime = (Date.now() - startTime) / 1000;
-            const remainingFiles = totalFiles - loadedFiles;
-            const estimatedTime = (elapsedTime / loadedFiles) * remainingFiles;
-
-            const loadingTime = document.getElementById('loading-time');
-            if (loadingTime) {
-                loadingTime.textContent = `预计剩余时间: ${estimatedTime.toFixed(1)}秒`;
-            }
-
-            if (loadedFiles >= totalFiles) {
-                hideLoadingBar();
-                showControls();
-            }
-        }
-
-        function hideLoadingBar() {
-            const loadingBar = document.querySelector('.loading-bar');
-            const loadingText = document.getElementById('loading-text');
-            const loadingTime = document.getElementById('loading-time');
-            if (loadingBar && loadingText && loadingTime) {
-                loadingBar.style.display = 'none';
-                loadingText.style.display = 'none';
-                loadingTime.style.display = 'none';
-            }
-        }
-
-        function showControls() {
-            const controls = document.querySelectorAll('.ctrl');
-            controls.forEach(control => {
-                control.style.display = 'block';
-            });
-        }
-
-        window.addEventListener('load', () => {
-            preloadAudio();
-        });
-
-        function playAudio(source) {
-            source.start();
-            if (loopEnabled) {
-                source.loop = true;
-            } else {
-                source.loop = false;
-            }
-        }
-
-        function playNext() {
-            if (!autoPlayEnabled) return;
-
-            const audioElements = document.querySelectorAll('ul li');
-            if (autoPlayIndex >= audioElements.length) {
-                autoPlayIndex = 0;
-            }
-
-            const soundUrl = audioElements[autoPlayIndex].getAttribute('m');
-            const audioBuffer = audioBuffers[soundUrl];
-
-            if (audioBuffer) {
-                const source = audioContext.createBufferSource();
-                source.buffer = audioBuffer;
-                source.connect(audioContext.destination);
-
-                audioList.forEach(source => source.stop());
-                audioList = [source];
-
-                currentAudio = source;
-
-                source.onended = () => {
-                    autoPlayIndex++;
-                    playNext();
-                };
-
-                if (delayTime > 0) {
-                    setTimeout(() => {
-                        playAudio(source);
-                    }, delayTime);
-                } else {
-                    playAudio(source);
-                }
-            }
-        }
-
-        document.querySelectorAll('ul li').forEach(item => {
-            item.addEventListener('click', () => {
-                const soundUrl = item.getAttribute('m');
-                const audioBuffer = audioBuffers[soundUrl];
-
-                if (audioBuffer) {
-                    const source = audioContext.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.connect(audioContext.destination);
-
-                    audioList.forEach(source => source.stop());
-                    audioList = [source];
-
-                    currentAudio = source;
-
-                    if (delayTime > 0) {
-                        setTimeout(() => {
-                            playAudio(source);
-                        }, delayTime);
-                    } else {
-                        playAudio(source);
-                    }
-                }
-            });
-        });
-
-        function pauseAll() {
-            audioList.forEach(source => source.stop());
-            audioList = [];
-            autoPlayEnabled = false;
-            loopEnabled = false;
-            delayTime = 0;
-            currentAudio = null;
-            showToast('已停止所有音效/音乐');
-        }
-
-        function setDelay() {
-            delayTime = prompt('请输入延迟时间（毫秒）：');
-            if (delayTime !== null && !isNaN(delayTime)) {
-                delayTime = parseInt(delayTime);
-                showToast(`已设置延迟播放：${delayTime}毫秒`);
-            } else {
-                showToast('请输入有效的数字');
-            }
-        }
-
-        function cancelDelay() {
-            delayTime = 0;
-            showToast('已取消延迟播放');
-        }
-
-        function setAutoPlay() {
-            autoPlayEnabled = true;
-            autoPlayIndex = 0;
-            playNext();
-            showToast('已启用自动播放');
-        }
-
-        function cancelAutoPlay() {
-            autoPlayEnabled = false;
-            showToast('已取消自动播放');
-        }
-
-        function setLoop() {
-            loopEnabled = true;
-            showToast('已启用单击循环');
-        }
-
-function cancelLoop() {
-    loopEnabled = false;
+// 折叠式变声器UI动态添加
+function addVoiceChangerUI() {
+    const mainDiv = document.getElementById('main');
+    const carousel = document.querySelector('.carousel');
     
-    // 修复：如果有当前正在播放的音频，立即更新其循环状态
-    if (currentAudio) {
-        currentAudio.loop = false;
+    const voiceChangerHTML = `
+        <div class="voice-changer-accordion" style="margin: 15px 0; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #21d399;">
+            <div class="voice-changer-header" style="background: linear-gradient(145deg, #21d399, #1ed18a); color: white; padding: 12px 15px; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-microphone-alt" style="margin-right: 8px;"></i>变声效果器</span>
+                <span style="display: flex; align-items: center; gap: 10px;">
+                    <span id="currentModeDisplay" style="font-size: 12px; opacity: 0.9; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 20px;">原声</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s ease;"></i>
+                </span>
+            </div>
+            <div class="voice-changer-content" style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease; background: linear-gradient(145deg, #e8f8f2, #d4f0e6);">
+                <div class="voice-changer-inner" style="padding: 15px;">
+                    <div class="voice-changer-title" style="color: #21d399; font-size: 14px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-magic"></i> 选择变声模式
+                        <span style="margin-left: auto; font-size: 11px; opacity: 0.7;">所有音效实时变声</span>
+                    </div>
+                    <div class="voice-modes" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button class="voice-mode-btn" data-mode="normal" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-user"></i> 原声</button>
+                        <button class="voice-mode-btn" data-mode="duck" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-cat"></i> 胖猫</button>
+                        <button class="voice-mode-btn" data-mode="monster" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-dragon"></i> 贝利亚</button>
+                        <button class="voice-mode-btn" data-mode="robot" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-robot"></i> 机器人</button>
+                        <button class="voice-mode-btn" data-mode="chipmunk" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-cat"></i> 花栗鼠</button>
+                        <button class="voice-mode-btn" data-mode="echo" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-mountain"></i> 大厅回音</button>
+                        <button class="voice-mode-btn" data-mode="telephone" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-phone-alt"></i> 电话音</button>
+                        <button class="voice-mode-btn" data-mode="underwater" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-water"></i> 水下</button>
+                        <button class="voice-mode-btn" data-mode="electric" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-bolt"></i> 爆音</button>
+                        <button class="voice-mode-btn" data-mode="demon" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-skull"></i> 超慢贝利亚</button>
+                        <button class="voice-mode-btn" data-mode="hyperchipmunk" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-rocket"></i> 超速花栗鼠</button>
+                        <button class="voice-mode-btn" data-mode="custom" style="background:#ffffff; color:#1a7a5c; border:2px solid #21d399; border-radius:30px; padding:6px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 2px 0 #1aa87d; display:flex; align-items:center; gap:5px;"><i class="fas fa-sliders-h"></i> 自定义</button>
+                    </div>
+                    <div class="custom-pitch-area" style="margin-top: 12px; display: flex; align-items: center; gap: 10px; background: rgba(33, 211, 153, 0.1); padding: 8px 12px; border-radius: 30px;">
+                        <label style="color:#21d399; font-size:13px; font-weight:bold;"><i class="fas fa-tachometer-alt"></i> 音调/速率</label>
+                        <input type="range" id="pitchSlider" min="0.3" max="2.5" step="0.05" value="1.0" style="flex:1; height:6px; border-radius:10px; background:#c8e6dc; -webkit-appearance:none;">
+                        <span id="pitchValue" style="color:#21d399; font-weight:bold; min-width:45px;">1.00x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    carousel.insertAdjacentHTML('afterend', voiceChangerHTML);
+    
+    // 绑定折叠事件
+    const header = document.querySelector('.voice-changer-header');
+    const content = document.querySelector('.voice-changer-content');
+    const icon = header.querySelector('.fa-chevron-down');
+    
+    header.addEventListener('click', () => {
+        const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+        if (isOpen) {
+            content.style.maxHeight = '0';
+            icon.style.transform = 'rotate(0deg';
+        } else {
+            content.style.maxHeight = content.scrollHeight + 'px';
+            icon.style.transform = 'rotate(180deg)';
+        }
+    });
+    
+    // 绑定变声器事件
+    const voiceModeBtns = document.querySelectorAll('.voice-mode-btn');
+    const pitchSlider = document.getElementById('pitchSlider');
+    const pitchValue = document.getElementById('pitchValue');
+    const currentModeDisplay = document.getElementById('currentModeDisplay');
+    
+    function updateButtonStyle(activeBtn) {
+        voiceModeBtns.forEach(btn => {
+            if (btn === activeBtn) {
+                btn.style.background = '#21d399';
+                btn.style.color = 'white';
+                btn.style.border = '2px solid #21d399';
+            } else {
+                btn.style.background = '#ffffff';
+                btn.style.color = '#1a7a5c';
+                btn.style.border = '2px solid #21d399';
+            }
+        });
     }
     
-    showToast('已取消单击循环');
-}
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2000);
-        }
-
-        function toggleAccordion(header) {
-            const item = header.parentElement;
-            const content = item.querySelector('.accordion-content');
-            const icon = header.querySelector('i');
-
-            if (content.classList.contains('open')) {
-                content.classList.remove('open');
-                icon.classList.remove('active');
+    function setActiveVoiceMode(mode) {
+        let clickedBtn = null;
+        voiceModeBtns.forEach(btn => {
+            if (btn.dataset.mode === mode) {
+                clickedBtn = btn;
+                btn.classList.add('active');
             } else {
-                content.classList.add('open');
-                icon.classList.add('active');
+                btn.classList.remove('active');
             }
+        });
+        if (clickedBtn) updateButtonStyle(clickedBtn);
+        
+        currentVoiceMode = mode;
+        if (mode !== 'custom') {
+            const preset = modePresets[mode];
+            if (preset) {
+                pitchSlider.value = preset.rate;
+                pitchValue.textContent = preset.rate.toFixed(2) + 'x';
+                customPlaybackRate = preset.rate;
+            }
+        } else {
+            pitchSlider.value = customPlaybackRate;
+            pitchValue.textContent = customPlaybackRate.toFixed(2) + 'x';
         }
+        const modeName = { normal:'原声', duck:'胖猫', monster:'贝利亚', robot:'机器人', chipmunk:'花栗鼠', echo:'大厅回音', telephone:'电话音', underwater:'水下', electric:'爆音', demon:'超慢贝利亚', hyperchipmunk:'超速花栗鼠', custom:'自定义' }[mode] || mode;
+        currentModeDisplay.textContent = modeName;
+        showToast(`变声模式：${modeName}`, 1000);
+    }
+    
+    voiceModeBtns.forEach(btn => {
+        btn.addEventListener('click', () => setActiveVoiceMode(btn.dataset.mode));
+    });
+    
+    pitchSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        customPlaybackRate = val;
+        pitchValue.textContent = val.toFixed(2) + 'x';
+        if (currentVoiceMode === 'custom') {
+            modePresets.custom = { rate: val, detune: 0, filter: null };
+        } else {
+            setActiveVoiceMode('custom');
+        }
+        currentModeDisplay.textContent = `自定义 ${val.toFixed(2)}x`;
+    });
+    
+    // 默认激活原声
+    setActiveVoiceMode('normal');
+}
 
-        function openModal(img) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modal.style.display = 'flex';
-            modalImg.src = img.src;
-        }
+// 变声播放核心
+function makeDistortionCurve(amount) {
+    const k = amount;
+    const n_samples = 44100;
+    const curve = new Float32Array(n_samples);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < n_samples; ++i) {
+        const x = i * 2 / n_samples - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+    }
+    return curve;
+}
 
-        function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.style.display = 'none';
+function playBufferWithEffect(buffer, loop = false) {
+    if (!buffer) return;
+    
+    audioList.forEach(src => { try { src.stop(); } catch(e) {} });
+    audioList = [];
+    
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    
+    let rate = 1.0, detune = 0, filterType = null;
+    if (currentVoiceMode === 'custom') {
+        rate = customPlaybackRate;
+    } else {
+        const preset = modePresets[currentVoiceMode];
+        if (preset) {
+            rate = preset.rate;
+            detune = preset.detune || 0;
+            filterType = preset.filter;
         }
+    }
+    
+    source.playbackRate.value = rate;
+    source.detune.value = detune;
+    source.loop = loop;
+    
+    let lastNode = source;
+    
+    if (filterType === 'robot') {
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1000;
+        filter.Q.value = 1.5;
+        lastNode.connect(filter);
+        lastNode = filter;
+    } else if (filterType === 'echo') {
+        const delay = audioContext.createDelay();
+        delay.delayTime.value = 0.25;
+        const gain = audioContext.createGain();
+        gain.gain.value = 0.5;
+        source.connect(delay);
+        delay.connect(gain);
+        gain.connect(audioContext.destination);
+        source.connect(audioContext.destination);
+        audioList.push(source);
+        currentAudio = source;
+        source.start();
+        return source;
+    } else if (filterType === 'telephone') {
+        const filter1 = audioContext.createBiquadFilter();
+        filter1.type = 'highshelf';
+        filter1.frequency.value = 1000;
+        filter1.gain.value = -15;
+        const filter2 = audioContext.createBiquadFilter();
+        filter2.type = 'lowshelf';
+        filter2.frequency.value = 500;
+        filter2.gain.value = -15;
+        lastNode.connect(filter1);
+        filter1.connect(filter2);
+        lastNode = filter2;
+    } else if (filterType === 'underwater') {
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 400;
+        filter.Q.value = 1;
+        lastNode.connect(filter);
+        lastNode = filter;
+    } else if (filterType === 'electric') {
+        const distortion = audioContext.createWaveShaper();
+        distortion.curve = makeDistortionCurve(200);
+        lastNode.connect(distortion);
+        lastNode = distortion;
+    } else if (filterType === 'demon') {
+        const distortion = audioContext.createWaveShaper();
+        distortion.curve = makeDistortionCurve(400);
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        lastNode.connect(distortion);
+        distortion.connect(filter);
+        lastNode = filter;
+    }
+    
+    lastNode.connect(audioContext.destination);
+    
+    source.onended = () => {
+        if (autoPlayEnabled) {
+            autoPlayIndex++;
+            playNext();
+        }
+    };
+    
+    source.start();
+    audioList.push(source);
+    currentAudio = source;
+    return source;
+}
 
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+function playSoundByUrl(soundUrl, loop = false) {
+    const buffer = audioBuffers[soundUrl];
+    if (buffer) {
+        playBufferWithEffect(buffer, loop);
+    }
+}
+
+// 预加载和原有功能
+let startTime = Date.now();
+let totalFiles = 0;
+let loadedFiles = 0;
+
+function preloadAudio() {
+    const audioElements = document.querySelectorAll('ul li');
+    totalFiles = audioElements.length;
+    audioElements.forEach((item) => {
+        const soundUrl = item.getAttribute('m');
+        fetch(soundUrl)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                audioBuffers[soundUrl] = audioBuffer;
+                loadedFiles++;
+                updateLoadingProgress();
+            })
+            .catch(error => {
+                console.error(`Failed to load audio: ${soundUrl}`, error);
+                loadedFiles++;
+                updateLoadingProgress();
+            });
+    });
+}
+
+function updateLoadingProgress() {
+    const progress = (loadedFiles / totalFiles) * 100;
+    const progressBar = document.getElementById('loading-progress');
+    if (progressBar) progressBar.style.width = `${progress}%`;
+    
+    const elapsedTime = (Date.now() - startTime) / 1000;
+    const remainingFiles = totalFiles - loadedFiles;
+    const estimatedTime = (elapsedTime / loadedFiles) * remainingFiles;
+    const loadingTime = document.getElementById('loading-time');
+    if (loadingTime && !isNaN(estimatedTime)) loadingTime.textContent = `预计剩余时间: ${estimatedTime.toFixed(1)}秒`;
+    
+    if (loadedFiles >= totalFiles) {
+        const loadingBar = document.querySelector('.loading-bar');
+        const loadingText = document.getElementById('loading-text');
+        const loadingTimeEl = document.getElementById('loading-time');
+        if(loadingBar) loadingBar.style.display = 'none';
+        if(loadingText) loadingText.style.display = 'none';
+        if(loadingTimeEl) loadingTimeEl.style.display = 'none';
+        document.querySelectorAll('.ctrl').forEach(c => c.style.display = 'block');
+    }
+}
+
+function playNext() {
+    if (!autoPlayEnabled) return;
+    const audioElements = document.querySelectorAll('ul li');
+    if (autoPlayIndex >= audioElements.length) autoPlayIndex = 0;
+    const soundUrl = audioElements[autoPlayIndex].getAttribute('m');
+    const audioBuffer = audioBuffers[soundUrl];
+    if (audioBuffer) {
+        const source = playBufferWithEffect(audioBuffer, false);
+        if (source) source.onended = () => { autoPlayIndex++; playNext(); };
+    } else { autoPlayIndex++; playNext(); }
+}
+
+// 事件绑定
+document.querySelectorAll('ul li').forEach(item => {
+    item.addEventListener('click', () => {
+        const soundUrl = item.getAttribute('m');
+        if (delayTime > 0) {
+            setTimeout(() => playSoundByUrl(soundUrl, loopEnabled), delayTime);
+        } else {
+            playSoundByUrl(soundUrl, loopEnabled);
         }
-        function openLink(url) {
-            window.open(url, '_blank');
-        }
+    });
+});
+
+function pauseAll() {
+    audioList.forEach(source => source.stop());
+    audioList = [];
+    autoPlayEnabled = false;
+    loopEnabled = false;
+    delayTime = 0;
+    currentAudio = null;
+    showToast('已停止所有音效/音乐');
+}
+
+function setDelay() {
+    delayTime = prompt('请输入延迟时间（毫秒）：');
+    if (delayTime !== null && !isNaN(delayTime)) {
+        delayTime = parseInt(delayTime);
+        showToast(`已设置延迟播放：${delayTime}毫秒`);
+    } else {
+        showToast('请输入有效的数字');
+    }
+}
+
+function cancelDelay() { delayTime = 0; showToast('已取消延迟播放'); }
+function setAutoPlay() { autoPlayEnabled = true; autoPlayIndex = 0; playNext(); showToast('已启用自动播放'); }
+function cancelAutoPlay() { autoPlayEnabled = false; showToast('已取消自动播放'); }
+function setLoop() { loopEnabled = true; showToast('已启用单击循环'); }
+function cancelLoop() { loopEnabled = false; if (currentAudio) currentAudio.loop = false; showToast('已取消单击循环'); }
+
+function showToast(message, duration = 2000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+function toggleAccordion(header) {
+    const item = header.parentElement;
+    const content = item.querySelector('.accordion-content');
+    const icon = header.querySelector('i');
+    if (content.classList.contains('open')) {
+        content.classList.remove('open');
+        if(icon) icon.classList.remove('active');
+    } else {
+        content.classList.add('open');
+        if(icon) icon.classList.add('active');
+    }
+}
+
+function openModal(img) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modal.style.display = 'flex';
+    modalImg.src = img.src;
+}
+function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function openLink(url) { window.open(url, '_blank'); }
+
+// 页面启动
+window.addEventListener('load', () => {
+    addVoiceChangerUI();
+    preloadAudio();
+});
+
+// 滚动显示返回顶部按钮
+window.addEventListener('scroll', () => {
+    const btn = document.querySelector('.float-btn');
+    if (window.scrollY > 300) btn.classList.add('show');
+    else btn.classList.remove('show');
+});
     </script>
 </body>
 </html>
